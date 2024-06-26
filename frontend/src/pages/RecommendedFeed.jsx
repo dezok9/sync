@@ -1,3 +1,5 @@
+import './stylesheets/RecommendedFeed.css'
+
 function RecommendedFeed() {
     return (
         <div>

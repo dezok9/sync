@@ -1,3 +1,5 @@
+import './stylesheets/SignUp.css'
+
 function SignUp() {
     return (
         <div>

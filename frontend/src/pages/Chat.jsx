@@ -1,3 +1,5 @@
+import './stylesheets/Chats.css'
+
 function Chats() {
     return (
         <div>

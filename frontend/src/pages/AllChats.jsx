@@ -1,3 +1,5 @@
+import './stylesheets/AllChats.css'
+
 function AllChats() {
     return (
         <div>
