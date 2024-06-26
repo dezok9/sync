@@ -1,8 +1,8 @@
-import './stylesheets/Footer'
+import './stylesheets/Footer.css'
 
 function Footer() {
     return (
-        <section>
+        <section className='footer'>
 
         </section>
     )
