@@ -2,8 +2,9 @@ import './stylesheets/Profile.css'
 
 function Profile() {
     return (
-        <div>
-        </div>
+        <>
+
+        </>
     )
 }
 

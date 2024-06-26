@@ -10,21 +10,27 @@ import Search from './pages/Search'
 import SignUp from './pages/SignUp'
 import Login from './pages/Login'
 
+import Header from './components/Header'
+
 function App() {
   return (
     <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}/>
-          <Route path="/profile/:userHandle" element={<Profile />}/>
-          <Route path="/recommended" element={<RecommendedFeed />}/>
-          <Route path="/chats" element={<AllChats />}/>
-          <Route path="/chat/:recipientUserHandle" element={<Chat />}/>
-          <Route path="/search/s=:query" element={<Search />}/>
-          <Route path="/sign-up" element={<SignUp />}/>
-          <Route path="/login" element={<Login />}/>
-        </Routes>
-      </BrowserRouter>
+      <div className='page'>
+        <Header />
+
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />}/>
+            <Route path="/profile/:userHandle" element={<Profile />}/>
+            <Route path="/recommended" element={<RecommendedFeed />}/>
+            <Route path="/chats" element={<AllChats />}/>
+            <Route path="/chat/:recipientUserHandle" element={<Chat />}/>
+            <Route path="/search/s=:query" element={<Search />}/>
+            <Route path="/sign-up" element={<SignUp />}/>
+            <Route path="/login" element={<Login />}/>
+          </Routes>
+        </BrowserRouter>
+      </div>
     </>
   )
 }

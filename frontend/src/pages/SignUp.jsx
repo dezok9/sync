@@ -1,9 +1,14 @@
 import './stylesheets/SignUp.css'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 function SignUp() {
     return (
-        <div>
-        </div>
+        <>
+            <Header />
+
+            <Footer />
+        </>
     )
 }
 
