@@ -1,4 +1,4 @@
-# CS LinkedIn*
+# Sync
 A social platform creating a way to view the work with others, connect with others, and create with others in computer science (CS) without having to download and run code on your local computer.
 
 ## Overview
