@@ -12,3 +12,82 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  userHandle        String    @unique
+  github            String    @unique
+  encryptedPassword String
+  firstName         String
+  lastName          String
+  businessAccount   Boolean   @default(false)
+  featuredProjects  String[]  @default([])
+
+  posts             Post[]
+  comments          Comment[]
+  chatSenders       Chat[]    @relation(name: "chat sender")
+  chatRecipients    Chat[]    @relation(name: "chat recipient")
+  messageSenders    Message[] @relation(name: "message sender")
+  messageRecipients Message[] @relation(name: "message recipient")
+}
+
+model Post {
+  id                Int       @id @default(autoincrement())
+  mediaURLs         String[]
+  tags              String[]
+  date              String
+  timestamp         String
+  text              String
+
+  authorID          Int
+  author            User      @relation(fields: [authorID], references: [id])
+
+  comments          Comment[]
+}
+
+model Comment {
+  id                Int       @id @default(autoincrement())
+  text              String
+  date              String
+  timestamp         String
+  likes             Int       @default(0)
+  childComments     Comment[] @relation(name: "replies")
+
+  parentCommentID   Int
+  parentComment     Comment   @relation(fields: [parentCommentID], references: [id], name: "replies")
+
+  postID            Int
+  post              Post      @relation(fields: [postID], references: [id])
+
+  authorID          Int
+  author            User      @relation(fields: [authorID], references: [id])
+}
+
+model Chat {
+  id                Int       @id @default(autoincrement())
+
+  senderID          Int
+  sender            User      @relation(fields: [senderID], references: [id], name: "chat sender")
+
+  recipientID       Int
+  recipient         User      @relation(fields: [recipientID], references: [id], name: "chat recipient")
+
+  messages          Message[]
+}
+
+model Message {
+  id                Int       @id @default(autoincrement())
+  text              String
+  date              String
+  timestamp         String
+
+  chatID            Int
+  chat              Chat      @relation(fields: [chatID], references: [id])
+
+  senderID          Int
+  sender            User      @relation(fields: [senderID], references: [id], name: "message sender")
+
+  recipientID       Int
+  recipient         User      @relation(fields: [recipientID], references: [id], name: "message recipient")
+}
