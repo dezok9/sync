@@ -24,18 +24,23 @@ model User {
   businessAccount   Boolean   @default(false)
   featuredProjects  String[]  @default([])
 
+  connectionIDs     Int
+  connections       User      @relation(fields: [connectionIDs], references: [id], name: "connections")
+
   posts             Post[]
   comments          Comment[]
   chatSenders       Chat[]    @relation(name: "chat sender")
   chatRecipients    Chat[]    @relation(name: "chat recipient")
   messageSenders    Message[] @relation(name: "message sender")
   messageRecipients Message[] @relation(name: "message recipient")
+  userConnections   User[]      @relation(name: "connections")
 }
 
 model Post {
   id                Int       @id @default(autoincrement())
   mediaURLs         String[]
   tags              String[]
+  title             String
   date              String
   timestamp         String
   text              String
