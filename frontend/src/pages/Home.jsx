@@ -1,10 +1,7 @@
-import './stylesheets/Home.css'
+import "./stylesheets/Home.css";
 
 function Home() {
-    return (
-        <>
-        </>
-    )
+  return <></>;
 }
 
 export default Home;

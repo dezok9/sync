@@ -1,11 +1,7 @@
-import './stylesheets/Search.css'
-
+import "./stylesheets/Search.css";
 
 function Search() {
-    return (
-        <>
-        </>
-    )
+  return <></>;
 }
 
 export default Search;

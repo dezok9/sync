@@ -1,11 +1,7 @@
-import './stylesheets/Profile.css'
+import "./stylesheets/Profile.css";
 
 function Profile() {
-    return (
-        <>
-
-        </>
-    )
+  return <></>;
 }
 
 export default Profile;

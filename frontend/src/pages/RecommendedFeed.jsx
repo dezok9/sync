@@ -1,10 +1,7 @@
-import './stylesheets/RecommendedFeed.css'
+import "./stylesheets/RecommendedFeed.css";
 
 function RecommendedFeed() {
-    return (
-        <>
-        </>
-    )
+  return <></>;
 }
 
 export default RecommendedFeed;

@@ -4,12 +4,44 @@
 }
 
 :root {
-  --blue-grey: rgba(43, 49, 55, 1.0);
-  --near-black: rgba(31, 31, 31, 1.0);
-  --off-white: rgba(255, 252, 247, 1.0);
+  --blue-grey: rgba(43, 49, 55, 1);
+  --near-black: rgba(31, 31, 31, 1);
+  --off-white: rgba(255, 252, 247, 1);
+  --purple-accent: rgba(152, 167, 255, 1);
 }
 
 body {
   background-color: var(--blue-grey);
   color: var(--off-white);
+}
+
+input {
+  width: 95%;
+  height: 40%;
+  border-radius: 15px;
+  padding: 0% 4%;
+  border: 2px solid rgba(0, 0, 0, 0); /* Transparent to prevent offset when focused. */
+  margin: 2% 0%;
+
+  transition-duration: 0.6s;
+}
+input:focus {
+  outline: 4px solid var(--purple-accent);
+  box-shadow: 0 0 5px 5px var(--purple-accent);
+  border: 2px solid white;
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  gap: 4%;
+}
+
+.input-section {
+  width: 30%;
+  height: 10%;
 }
