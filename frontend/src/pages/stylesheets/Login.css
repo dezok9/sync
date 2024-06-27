@@ -16,7 +16,7 @@ input {
     width: 95%;
     height: 40%;
     border-radius: 15px;
-    padding: 0% 2%;
+    padding: 0% 4%;
     border: 2px solid rgba(0, 0, 0, 0);     /* Transparent to prevent offset when focused. */
     margin: 2% 0%;
 
