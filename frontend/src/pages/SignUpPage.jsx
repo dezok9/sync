@@ -4,9 +4,9 @@ import { login } from "./util/login";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-import "./stylesheets/SignUp.css";
+import "./stylesheets/SignUpPage.css";
 
-function SignUp() {
+function SignUpPage() {
   const FIRST_NAME = "firstName";
   const LAST_NAME = "lastName";
   const USER_HANDLE = "userHandle";
@@ -111,4 +111,4 @@ function SignUp() {
   );
 }
 
-export default SignUp;
+export default SignUpPage;

@@ -1,9 +1,9 @@
-import "./stylesheets/Chat.css";
+import "./stylesheets/AllChatsPage.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-function Chats() {
+function AllChatsPage() {
   return <></>;
 }
 
-export default Chats;
+export default AllChatsPage;

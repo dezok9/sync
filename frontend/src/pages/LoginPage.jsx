@@ -4,9 +4,9 @@ import { login } from "./util/login";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-import "./stylesheets/Login.css";
+import "./stylesheets/LoginPage.css";
 
-function Login() {
+function LoginPage() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
 
@@ -50,4 +50,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default LoginPage;
