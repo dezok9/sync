@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
-import { login } from "./util/login";
-
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import { login, handleUserCreation } from "./util/login";
 
 import "./stylesheets/SignUpPage.css";
 
@@ -31,8 +28,7 @@ function SignUpPage() {
    */
   function handleInputChange(event) {
     const inputID = event.target.id;
-
-    setLoginInfo((prvs) => ({ ...prvs, inputID: event.target.value }));
+    setLoginInfo((prvs) => ({ ...prvs, [inputID]: event.target.value }));
   }
 
   return (
@@ -105,7 +101,7 @@ function SignUpPage() {
             onChange={handleInputChange}
           ></input>
         </div>
-        <button onClick={(user, password) => login}>Submit</button>
+        <button onClick={() => handleUserCreation(loginInfo)}>Submit</button>
       </section>
     </>
   );

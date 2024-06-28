@@ -17,7 +17,7 @@ model User {
   id                Int       @id @default(autoincrement())
   email             String    @unique
   userHandle        String    @unique
-  github            String    @unique
+  githubHandle      String    @unique
   encryptedPassword String
   firstName         String
   lastName          String
