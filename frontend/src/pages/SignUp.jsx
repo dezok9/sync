@@ -7,33 +7,33 @@ import Footer from "../components/Footer";
 import "./stylesheets/SignUp.css";
 
 function SignUp() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [userHandle, setUserHandle] = useState("");
-  const [email, setEmail] = useState("");
-  const [githubHandle, setGithubHandle] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const FIRSTNAME = "firstName";
+  const LASTNAME = "lastName";
+  const USERHANDLE = "userHandle";
+  const EMAIL = "email";
+  const GITHUB = "githubHandle";
+  const PASSWORD = "password";
+  const CONFIRM = "confirmPassword";
+
+  // Use states for login contained in one object.
+  const [loginInfo, setLoginInfo] = useState({
+    [FIRSTNAME]: "",
+    [LASTNAME]: "",
+    [USERHANDLE]: "",
+    [EMAIL]: "",
+    [GITHUB]: "",
+    [PASSWORD]: "",
+    [CONFIRM]: "",
+  });
 
   /***
    * Handles changes to input fields.
    */
   function handleInputChange(event) {
-    if (event.target.id === "firstName-field") {
-      setFirstName(event.target.value);
-    } else if (event.target.id === "lastName-field") {
-      setLastName(event.target.value);
-    } else if (event.target.id === "userHandle-field") {
-      setUserHandle(event.target.value);
-    } else if (event.target.id === "email-field") {
-      setEmail(event.target.value);
-    } else if (event.target.id === "githubHandle-field") {
-      setGithubHandle(event.target.value);
-    } else if (event.target.id === "password-field") {
-      setPassword(event.target.value);
-    } else if (event.target.id === "confirmPassword-field") {
-      setConfirmPassword(event.target.value);
-    }
+    const id = event.target.id;
+    console.log(id);
+
+    setLoginInfo((prvs) => ({ ...prvs, id: event.target.value }));
   }
 
   return (
@@ -42,9 +42,9 @@ function SignUp() {
         <div className="input-section">
           <h2>First Name</h2>
           <input
-            id="firstName-field"
+            id={FIRSTNAME}
             className="input"
-            value={firstName}
+            value={loginInfo.FIRSTNAME}
             onChange={handleInputChange}
             autoFocus={true}
           ></input>
@@ -52,57 +52,57 @@ function SignUp() {
         <div className="input-section">
           <h2>Last Name</h2>
           <input
-            id="lastName-field"
+            id={LASTNAME}
             className="input"
-            value={lastName}
+            value={loginInfo.LASTNAME}
             onChange={handleInputChange}
           ></input>
         </div>
         <div className="input-section">
           <h2>Email</h2>
           <input
-            id="email-field"
+            id={EMAIL}
             className="input"
             inputMode="email"
-            value={email}
+            value={loginInfo.EMAIL}
             onChange={handleInputChange}
           ></input>
         </div>
         <div className="input-section">
           <h2>User Handle</h2>
           <input
-            id="userHandle-field"
+            id={USERHANDLE}
             className="input"
-            value={userHandle}
+            value={loginInfo.USERHANDLE}
             onChange={handleInputChange}
           ></input>
         </div>
         <div className="input-section">
           <h2>GitHub Handle</h2>
           <input
-            id="githubHandle-field"
+            id={GITHUB}
             className="input"
-            value={githubHandle}
+            value={loginInfo.GITHUB}
             onChange={handleInputChange}
           ></input>
         </div>
         <div className="input-section">
           <h2>Password</h2>
           <input
-            id="password-field"
+            id={PASSWORD}
             className="input"
             type="password"
-            value={password}
+            value={loginInfo.PASSWORD}
             onChange={handleInputChange}
           ></input>
         </div>
         <div className="input-section">
           <h2>Confirm Password</h2>
           <input
-            id="confirmPassword-field"
+            id={CONFIRM}
             className="input"
             type="password"
-            value={confirmPassword}
+            value={loginInfo.CONFIRM}
             onChange={handleInputChange}
           ></input>
         </div>
