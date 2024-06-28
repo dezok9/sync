@@ -31,9 +31,7 @@ model User {
   comments          Comment[]
   chatSenders       Chat[]    @relation(name: "chat sender")
   chatRecipients    Chat[]    @relation(name: "chat recipient")
-  messageSenders    Message[] @relation(name: "message sender")
-  messageRecipients Message[] @relation(name: "message recipient")
-  userConnections   User[]      @relation(name: "connections")
+  userConnections   User[]    @relation(name: "connections")
 }
 
 model Post {
@@ -53,7 +51,7 @@ model Post {
 
 model Comment {
   id                Int       @id @default(autoincrement())
-  text              String
+  commentText       String
   date              String
   timestamp         String
   likes             Int       @default(0)
@@ -89,10 +87,4 @@ model Message {
 
   chatID            Int
   chat              Chat      @relation(fields: [chatID], references: [id])
-
-  senderID          Int
-  sender            User      @relation(fields: [senderID], references: [id], name: "message sender")
-
-  recipientID       Int
-  recipient         User      @relation(fields: [recipientID], references: [id], name: "message recipient")
 }
