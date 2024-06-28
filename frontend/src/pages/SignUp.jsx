@@ -7,33 +7,32 @@ import Footer from "../components/Footer";
 import "./stylesheets/SignUp.css";
 
 function SignUp() {
-  const FIRSTNAME = "firstName";
-  const LASTNAME = "lastName";
-  const USERHANDLE = "userHandle";
+  const FIRST_NAME = "firstName";
+  const LAST_NAME = "lastName";
+  const USER_HANDLE = "userHandle";
   const EMAIL = "email";
   const GITHUB = "githubHandle";
   const PASSWORD = "password";
-  const CONFIRM = "confirmPassword";
+  const CONFIRM_PASSWORD = "confirmPassword";
 
   // Use states for login contained in one object.
   const [loginInfo, setLoginInfo] = useState({
-    [FIRSTNAME]: "",
-    [LASTNAME]: "",
-    [USERHANDLE]: "",
+    [FIRST_NAME]: "",
+    [LAST_NAME]: "",
+    [USER_HANDLE]: "",
     [EMAIL]: "",
     [GITHUB]: "",
     [PASSWORD]: "",
-    [CONFIRM]: "",
+    [CONFIRM_PASSWORD]: "",
   });
 
   /***
    * Handles changes to input fields.
    */
   function handleInputChange(event) {
-    const id = event.target.id;
-    console.log(id);
+    const inputID = event.target.id;
 
-    setLoginInfo((prvs) => ({ ...prvs, id: event.target.value }));
+    setLoginInfo((prvs) => ({ ...prvs, inputID: event.target.value }));
   }
 
   return (
@@ -42,9 +41,9 @@ function SignUp() {
         <div className="input-section">
           <h2>First Name</h2>
           <input
-            id={FIRSTNAME}
+            id={FIRST_NAME}
             className="input"
-            value={loginInfo.FIRSTNAME}
+            value={loginInfo.FIRST_NAME}
             onChange={handleInputChange}
             autoFocus={true}
           ></input>
@@ -52,9 +51,9 @@ function SignUp() {
         <div className="input-section">
           <h2>Last Name</h2>
           <input
-            id={LASTNAME}
+            id={LAST_NAME}
             className="input"
-            value={loginInfo.LASTNAME}
+            value={loginInfo.LAST_NAME}
             onChange={handleInputChange}
           ></input>
         </div>
@@ -71,9 +70,9 @@ function SignUp() {
         <div className="input-section">
           <h2>User Handle</h2>
           <input
-            id={USERHANDLE}
+            id={USER_HANDLE}
             className="input"
-            value={loginInfo.USERHANDLE}
+            value={loginInfo.USER_HANDLE}
             onChange={handleInputChange}
           ></input>
         </div>
@@ -99,10 +98,10 @@ function SignUp() {
         <div className="input-section">
           <h2>Confirm Password</h2>
           <input
-            id={CONFIRM}
+            id={CONFIRM_PASSWORD}
             className="input"
             type="password"
-            value={loginInfo.CONFIRM}
+            value={loginInfo.CONFIRM_PASSWORD}
             onChange={handleInputChange}
           ></input>
         </div>
