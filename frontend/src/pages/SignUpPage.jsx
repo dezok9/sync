@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { login, handleUserCreation } from "./util/login";
+import { useNavigate } from "react-router-dom";
 
 import "./stylesheets/SignUpPage.css";
 
 function SignUpPage() {
+  const navigate = useNavigate();
+
   const FIRST_NAME = "firstName";
   const LAST_NAME = "lastName";
   const USER_HANDLE = "userHandle";
@@ -29,6 +32,18 @@ function SignUpPage() {
   function handleInputChange(event) {
     const inputID = event.target.id;
     setLoginInfo((prvs) => ({ ...prvs, [inputID]: event.target.value }));
+  }
+
+  /***
+   * Helper function that creates a new account for the user.
+   * Navigates to the homepage on successful account creation.
+   */
+  async function signUp() {
+    const userCreated = await handleUserCreation(loginInfo);
+
+    if (userCreated) {
+      navigate("/");
+    }
   }
 
   return (
@@ -101,7 +116,7 @@ function SignUpPage() {
             onChange={handleInputChange}
           ></input>
         </div>
-        <button onClick={() => handleUserCreation(loginInfo)}>Submit</button>
+        <button onClick={signUp}>Submit</button>
       </section>
     </>
   );

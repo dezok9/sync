@@ -24,14 +24,10 @@ model User {
   businessAccount   Boolean   @default(false)
   featuredProjects  String[]  @default([])
 
-  connectionIDs     Int
-  connections       User      @relation(fields: [connectionIDs], references: [id], name: "connections")
-
   posts             Post[]
   comments          Comment[]
   chatSenders       Chat[]    @relation(name: "chat sender")
   chatRecipients    Chat[]    @relation(name: "chat recipient")
-  userConnections   User[]    @relation(name: "connections")
 }
 
 model Post {

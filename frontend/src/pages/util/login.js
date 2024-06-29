@@ -3,7 +3,7 @@ import { checkCredentials } from "./userVerification";
 
 /***
  * Handles user account creation.
- * Navigates to new page with successful completion.
+ * Returns true or false depending on status of user creation.
  */
 export async function handleUserCreation(loginInfo) {
   const {
@@ -34,24 +34,31 @@ export async function handleUserCreation(loginInfo) {
     return;
   }
 
-  const areCredentialsUnique = checkCredentials(loginInfo);
+  const areCredentialsUnique = checkCredentials(
+    userHandle,
+    githubHandle,
+    email
+  );
 
   if (areCredentialsUnique) {
-    const user = await fetch(`${DATABASE}/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        firstName: firstName,
-        lastName: lastName,
-        userHandle: userHandle,
-        email: email,
-        githubHandle: githubHandle,
-        password: password,
-      }),
-    });
-    return user;
+    try {
+      const response = await fetch(`${DATABASE}/create-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: firstName,
+          lastName: lastName,
+          userHandle: userHandle,
+          email: email,
+          githubHandle: githubHandle,
+          password: password,
+        }),
+      });
+
+      return response.ok;
+    } catch (err) {}
   } else {
     return res.status;
   }

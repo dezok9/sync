@@ -15,17 +15,21 @@ app.use(cors());
 
 /***
  * Checks to see if credentials are unique before signup.
+ * Returns 200 (OK) if no records matching the provided handles are found in the database.
  */
-app.post("/unique/:credential", async (req, res) => {
-  const credential = req.params.credential;
-  const userInput = req.body[credential];
-  const databaseInfo = await prisma.user.findUnique({
+app.post("/check-credentials", async (req, res) => {
+  const { userHandle, githubHandle, email } = req.body;
+  const databaseInfo = await prisma.user.findMany({
     where: {
-      [credential]: userInput,
+      OR: [
+        { userHandle: userHandle },
+        { githubHandle: githubHandle },
+        { email: email },
+      ],
     },
   });
 
-  if (databaseInfo === null) {
+  if (databaseInfo.length === 0) {
     // Return OK if unique.
     res.status(200).json();
   } else {
@@ -34,10 +38,31 @@ app.post("/unique/:credential", async (req, res) => {
 });
 
 /***
- * Sign up for a user.
+ * Creates a new user.
+ * Returns 201 if successful and 500 otherwise.
  */
-app.post("/create", async (req, res) => {
-  res.send().json();
+app.post("/create-user", async (req, res) => {
+  const { firstName, lastName, userHandle, email, githubHandle, password } =
+    req.body;
+
+  bycrypt.hash(password, SALT_ROUNDS, async function (err, hashed) {
+    try {
+      await prisma.user.create({
+        data: {
+          firstName: firstName,
+          lastName: lastName,
+          userHandle: userHandle,
+          email: email,
+          githubHandle: githubHandle,
+          encryptedPassword: hashed,
+        },
+      });
+
+      res.status(201).json();
+    } catch (err) {
+      res.status(500).json({ "error:": err.message });
+    }
+  });
 });
 
 /***
