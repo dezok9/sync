@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
-import { login } from "./util/login";
-
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import { handleSignUp, login } from "./util/login";
 
 import "./stylesheets/LoginPage.css";
 

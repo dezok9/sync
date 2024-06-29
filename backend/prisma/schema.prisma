@@ -17,21 +17,17 @@ model User {
   id                Int       @id @default(autoincrement())
   email             String    @unique
   userHandle        String    @unique
-  github            String    @unique
+  githubHandle      String    @unique
   encryptedPassword String
   firstName         String
   lastName          String
   businessAccount   Boolean   @default(false)
   featuredProjects  String[]  @default([])
 
-  connectionIDs     Int
-  connections       User      @relation(fields: [connectionIDs], references: [id], name: "connections")
-
   posts             Post[]
   comments          Comment[]
   chatSenders       Chat[]    @relation(name: "chat sender")
   chatRecipients    Chat[]    @relation(name: "chat recipient")
-  userConnections   User[]    @relation(name: "connections")
 }
 
 model Post {

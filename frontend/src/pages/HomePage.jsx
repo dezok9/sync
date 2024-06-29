@@ -1,7 +1,11 @@
 import "./stylesheets/HomePage.css";
 
 function HomePage() {
-  return <></>;
+  return (
+    <>
+      <h1>Home</h1>
+    </>
+  );
 }
 
 export default HomePage;
