@@ -15,6 +15,16 @@ body {
   color: var(--off-white);
 }
 
+.auth-pages {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  gap: 4%;
+}
+
 input {
   width: 95%;
   height: 40%;
@@ -29,16 +39,6 @@ input:focus {
   outline: 4px solid var(--purple-accent);
   box-shadow: 0 0 5px 5px var(--purple-accent);
   border: 2px solid white;
-}
-
-.inputs {
-  display: flex;
-  flex-direction: column;
-  width: 100vw;
-  height: 100vh;
-  align-items: center;
-  justify-content: center;
-  gap: 4%;
 }
 
 .input-section {

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { lazy } from "react";
+import { Suspense, lazy } from "react";
 import "./stylesheets/App.css";
 
 // React.lazy() prevents the loading of pages until absolutely necessary to optimize user experience.
@@ -23,16 +23,18 @@ function App() {
         <Header />
 
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/profile/:userHandle" element={<ProfilePage />} />
-            <Route path="/recommended" element={<RecommendedFeedPage />} />
-            <Route path="/chats" element={<AllChatsPage />} />
-            <Route path="/chat/:recipientUserHandle" element={<ChatPage />} />
-            <Route path="/search/s=:query" element={<SearchPage />} />
-            <Route path="/sign-up" element={<SignUpPage />} />
-            <Route path="/login" element={<LoginPage />} />
-          </Routes>
+          <Suspense>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/profile/:userHandle" element={<ProfilePage />} />
+              <Route path="/recommended" element={<RecommendedFeedPage />} />
+              <Route path="/chats" element={<AllChatsPage />} />
+              <Route path="/chat/:recipientUserHandle" element={<ChatPage />} />
+              <Route path="/search/s=:query" element={<SearchPage />} />
+              <Route path="/sign-up" element={<SignUpPage />} />
+              <Route path="/login" element={<LoginPage />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
 
         <Footer />

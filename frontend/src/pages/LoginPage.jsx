@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { handleSignUp, login } from "./util/login";
+import { useNavigate } from "react-router-dom";
+import { handleLogin } from "./util/loginSignUp";
 
 import "./stylesheets/LoginPage.css";
 
 function LoginPage() {
+  const navigate = useNavigate();
+
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
 
@@ -18,9 +21,21 @@ function LoginPage() {
     }
   }
 
+  /***
+   * Helper function that attempts to log in.
+   * Navigates to the homepage on successful log in.
+   */
+  async function login() {
+    const validLogin = await handleLogin(user, password);
+    if (validLogin) {
+      navigate("/");
+    }
+  }
+
   return (
     <>
-      <section className="inputs">
+      <section className="auth-pages">
+        <h2>Login</h2>
         <div className="input-section">
           <h2>Username or Email</h2>
           <input
@@ -41,7 +56,11 @@ function LoginPage() {
             onChange={handleInputChange}
           ></input>
         </div>
-        <button onClick={(user, password) => login}>Submit</button>
+        <p>
+          Don't have an account?{" "}
+          <button onClick={() => navigate("/sign-up")}>Sign up</button> instead.
+        </p>
+        <button onClick={login}>Login</button>
       </section>
     </>
   );

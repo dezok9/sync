@@ -67,10 +67,21 @@ app.post("/create-user", async (req, res) => {
 
 /***
  * Attempts to log in using the provided credentials.
- * Returns 200 for successful log in attempt and a 401 otherwise.
+ * Returns 200 for successful log in attempt and a 500 otherwise.
  */
 app.post("/login", async (req, res) => {
-  res.send().json();
+  const { userHandle, password } = req.body;
+  const user = await prisma.user.findUnique({
+    where: { userHandle: userHandle },
+  });
+
+  bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
+    if (valid) {
+      res.status(200).json({ user });
+    } else {
+      res.status(500).json({ "error:": err });
+    }
+  });
 });
 
 app.listen(PORT, () => {

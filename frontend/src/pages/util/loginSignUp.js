@@ -5,7 +5,7 @@ import { checkCredentials } from "./userVerification";
  * Handles user account creation.
  * Returns true or false depending on status of user creation.
  */
-export async function handleUserCreation(loginInfo) {
+export async function handleSignUp(loginInfo) {
   const {
     firstName,
     lastName,
@@ -42,7 +42,7 @@ export async function handleUserCreation(loginInfo) {
 
   if (areCredentialsUnique) {
     try {
-      const response = await fetch(`${DATABASE}/create-user`, {
+      const userCreation = await fetch(`${DATABASE}/create-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export async function handleUserCreation(loginInfo) {
         }),
       });
 
-      return response.ok;
+      return userCreation.ok;
     } catch (err) {}
   } else {
     return res.status;
@@ -66,17 +66,20 @@ export async function handleUserCreation(loginInfo) {
 
 /***
  * Attempts to login.
- * Will inform the user if the provided credentials are incorrect.
  */
-export async function login(user, password) {
-  const res = await fetch(`${DATABASE}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      user: user,
-      password: password,
-    }),
-  });
+export async function handleLogin(user, password) {
+  try {
+    const validLogin = await fetch(`${DATABASE}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userHandle: user,
+        password: password,
+      }),
+    });
+
+    return validLogin.ok;
+  } catch (err) {}
 }
