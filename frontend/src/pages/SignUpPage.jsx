@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { login, handleUserCreation } from "./util/login";
+import { useState } from "react";
+import { handleSignUp } from "./util/loginSignUp";
 import { useNavigate } from "react-router-dom";
 
 import "./stylesheets/SignUpPage.css";
@@ -36,19 +36,19 @@ function SignUpPage() {
 
   /***
    * Helper function that creates a new account for the user.
-   * Navigates to the homepage on successful account creation.
+   * Navigates to the login page  on successful account creation.
    */
   async function signUp() {
-    const userCreated = await handleUserCreation(loginInfo);
+    const userCreated = await handleSignUp(loginInfo);
 
     if (userCreated) {
-      navigate("/");
+      navigate("/login");
     }
   }
 
   return (
     <>
-      <section className="inputs">
+      <section className="auth-pages">
         <div className="input-section">
           <h2>First Name</h2>
           <input
@@ -116,6 +116,10 @@ function SignUpPage() {
             onChange={handleInputChange}
           ></input>
         </div>
+        <p>
+          Already have an account?{" "}
+          <button onClick={() => navigate("/login")}>Log in</button> instead.
+        </p>
         <button onClick={signUp}>Submit</button>
       </section>
     </>
