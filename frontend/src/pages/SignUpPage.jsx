@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { handleSignUp } from "./util/loginSignUp";
+import { handleSignUp } from "./util/auth";
 import { useNavigate } from "react-router-dom";
+import { githubAuth } from "./util/auth";
+import { Octokit } from "@octokit/rest";
 
 import "./stylesheets/SignUpPage.css";
 
 function SignUpPage() {
   const navigate = useNavigate();
+  const octokit = new Octokit();
 
   const FIRST_NAME = "firstName";
   const LAST_NAME = "lastName";
@@ -119,6 +122,12 @@ function SignUpPage() {
         <p>
           Already have an account?{" "}
           <button onClick={() => navigate("/login")}>Log in</button> instead.
+        </p>
+        <p>
+          <em>
+            Once you submit, you will be redirected to GitHub to connect your
+            account.
+          </em>
         </p>
         <button onClick={signUp}>Submit</button>
       </section>
