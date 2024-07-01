@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { handleLogin } from "./util/loginSignUp";
+import { handleLogin } from "./util/auth";
+import { useCookies } from "react-cookie";
 
 import "./stylesheets/LoginPage.css";
 
-function LoginPage() {
+function LoginPage(props) {
+  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
   const navigate = useNavigate();
 
   const [user, setUser] = useState("");
@@ -26,8 +28,14 @@ function LoginPage() {
    * Navigates to the homepage on successful log in.
    */
   async function login() {
-    const validLogin = await handleLogin(user, password);
+    const loginData = await handleLogin(user, password);
+    const validLogin = loginData[0];
+    const userData = loginData[1];
+
     if (validLogin) {
+      props.setIsAuthenticated(true);
+      setCookies("user", userData, { path: "/", maxAge: 3600 });
+
       navigate("/");
     }
   }

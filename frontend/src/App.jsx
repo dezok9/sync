@@ -1,5 +1,13 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import { CookiesProvider, useCookies } from "react-cookie";
+import { Suspense, lazy, useState } from "react";
+import { handleLogin } from "./pages/util/auth";
 import "./stylesheets/App.css";
 
 // React.lazy() prevents the loading of pages until absolutely necessary to optimize user experience.
@@ -17,29 +25,74 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 function App() {
-  return (
-    <>
-      <div className="page">
-        <Header />
+  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [isAuthenticated, setIsAuthenticated] = useState(cookies.user != null);
 
+  // For routes requiring that the user is logged in.
+  const PrivateRoutes = () => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" />;
+    } else {
+      return <Outlet />;
+    }
+  };
+
+  // For routes requiring that users are logged out (i.e. signup & login).
+  const AuthRoutes = () => {
+    if (isAuthenticated) {
+      return <Navigate to="/" />;
+    } else {
+      return <Outlet />;
+    }
+  };
+
+  return (
+    <div className="page">
+      <Header />
+
+      <CookiesProvider>
         <BrowserRouter>
           <Suspense>
             <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/profile/:userHandle" element={<ProfilePage />} />
-              <Route path="/recommended" element={<RecommendedFeedPage />} />
-              <Route path="/chats" element={<AllChatsPage />} />
-              <Route path="/chat/:recipientUserHandle" element={<ChatPage />} />
-              <Route path="/search/s=:query" element={<SearchPage />} />
-              <Route path="/sign-up" element={<SignUpPage />} />
-              <Route path="/login" element={<LoginPage />} />
+              <Route element={<PrivateRoutes />}>
+                <Route
+                  path="/"
+                  element={
+                    <HomePage
+                      cookies={{ cookies, setCookies, removeCookies }}
+                      isAuthenticated={isAuthenticated}
+                      setIsAuthenticated={setIsAuthenticated}
+                    />
+                  }
+                />
+                <Route path="/chats" element={<AllChatsPage />} />
+                <Route path="/recommended" element={<RecommendedFeedPage />} />
+                <Route path="/profile/:userHandle" element={<ProfilePage />} />
+                <Route
+                  path="/chat/:recipientUserHandle"
+                  element={<ChatPage />}
+                />
+                <Route path="/search/s=:query" element={<SearchPage />} />
+              </Route>
+              <Route element={<AuthRoutes />}>
+                <Route path="/sign-up" element={<SignUpPage />} />
+                <Route
+                  path="/login"
+                  element={
+                    <LoginPage
+                      isAuthenticated={isAuthenticated}
+                      setIsAuthenticated={setIsAuthenticated}
+                    />
+                  }
+                />
+              </Route>
             </Routes>
           </Suspense>
         </BrowserRouter>
+      </CookiesProvider>
 
-        <Footer />
-      </div>
-    </>
+      <Footer />
+    </div>
   );
 }
 

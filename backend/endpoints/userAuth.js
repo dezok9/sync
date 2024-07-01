@@ -3,6 +3,7 @@ const prisma = new PrismaClient();
 const bycrypt = require("bcrypt");
 const cors = require("cors");
 const express = require("express");
+const expressValidator = require("express-validator");
 
 const SALT_ROUNDS = 14;
 const PORT = 3000;
@@ -77,7 +78,17 @@ app.post("/login", async (req, res) => {
 
   bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
     if (valid) {
-      res.status(200).json({ user });
+      const userData = {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        githubHandle: user.githubHandle,
+        email: user.email,
+        userHandle: user.userHandle,
+        businessAccount: user.businessAccount,
+      };
+
+      res.status(200).json({ userData });
     } else {
       res.status(500).json({ "error:": err });
     }

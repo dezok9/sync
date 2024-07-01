@@ -1,6 +1,10 @@
 import { DATABASE } from "./data";
 import { checkCredentials } from "./userVerification";
 
+const GITHUB_CODE_FETCH_URL = new URLSearchParams(
+  new URL("https://github.com/login/oauth/authorize").search
+);
+
 /***
  * Handles user account creation.
  * Returns true or false depending on status of user creation.
@@ -66,6 +70,7 @@ export async function handleSignUp(loginInfo) {
 
 /***
  * Attempts to login.
+ * Returns authentication key if successful or null otherwise.
  */
 export async function handleLogin(user, password) {
   try {
@@ -80,6 +85,15 @@ export async function handleLogin(user, password) {
       }),
     });
 
-    return validLogin.ok;
+    const userData = await validLogin.json();
+
+    return [validLogin, userData.userData];
   } catch (err) {}
+}
+
+/***
+ * Function for rerouting to GitHub for authentication.
+ */
+export async function githubAuth() {
+  return;
 }
