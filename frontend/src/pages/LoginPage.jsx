@@ -5,7 +5,7 @@ import { useCookies } from "react-cookie";
 
 import "./stylesheets/LoginPage.css";
 
-function LoginPage(props) {
+function LoginPage() {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
   const navigate = useNavigate();
 
@@ -28,15 +28,16 @@ function LoginPage(props) {
    * Navigates to the homepage on successful log in.
    */
   async function login() {
-    const loginData = await handleLogin(user, password);
-    const validLogin = loginData[0];
-    const userData = loginData[1];
+    if (user.replace(" ", "") !== "" && password.replace(" ", "") !== "") {
+      const loginData = await handleLogin(user, password);
+      const validLogin = loginData[0];
+      const userData = loginData[1];
 
-    if (validLogin) {
-      props.setIsAuthenticated(true);
-      setCookies("user", userData, { path: "/", maxAge: 3600 });
+      if (validLogin) {
+        setCookies("user", userData, { path: "/", maxAge: 3600 });
 
-      navigate("/");
+        navigate("/");
+      }
     }
   }
 

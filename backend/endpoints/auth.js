@@ -68,7 +68,7 @@ app.post("/create-user", async (req, res) => {
 
 /***
  * Attempts to log in using the provided credentials.
- * Returns 200 for successful log in attempt and a 500 otherwise.
+ * Returns 200 for successful log in attempt and a 401 otherwise.
  */
 app.post("/login", async (req, res) => {
   const { userHandle, password } = req.body;
@@ -90,7 +90,7 @@ app.post("/login", async (req, res) => {
 
       res.status(200).json({ userData });
     } else {
-      res.status(500).json({ "error:": err });
+      res.status(401).json({ "error:": err });
     }
   });
 });

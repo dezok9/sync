@@ -1,7 +1,9 @@
 import "./stylesheets/HomePage.css";
 import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 
-function HomePage(props) {
+function HomePage() {
+  const navigate = useNavigate();
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
 
   /***
@@ -9,7 +11,7 @@ function HomePage(props) {
    */
   function logOut() {
     removeCookies("user");
-    props.setIsAuthenticated(false);
+    navigate("/login");
   }
 
   return (
