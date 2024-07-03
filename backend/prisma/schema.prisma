@@ -21,6 +21,7 @@ model User {
   encryptedPassword String
   firstName         String
   lastName          String
+  profilePicture    String    @default("")
   businessAccount   Boolean   @default(false)
   featuredProjects  String[]  @default([])
 

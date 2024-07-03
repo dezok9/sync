@@ -7,10 +7,11 @@ import "./stylesheets/LoginPage.css";
 
 function LoginPage() {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
-  const navigate = useNavigate();
 
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
+
+  const navigate = useNavigate();
 
   /***
    * Handles changes to input fields.

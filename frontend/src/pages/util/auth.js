@@ -1,9 +1,9 @@
-import { DATABASE } from "./data";
 import { Popup } from "../../components/Popup";
 
 const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = import.meta.env.VITE_GITHUB_CLIENT_ID;
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
+const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
 
 const GITHUB_IDENTITY_URL = "https://github.com/login/oauth/authorize";
 const GITHUB_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
@@ -150,9 +150,8 @@ export async function githubAuthentication() {
   });
 
   if (state === localStorage.getItem("CSRFToken")) {
-    console.log(`${GITHUB_ACCESS_TOKEN_URL}?${accessTokenParams}`);
     window.location.assign(`${GITHUB_ACCESS_TOKEN_URL}?${accessTokenParams}`);
   } else {
-    console.log("codes don't match!");
+    // Codes don't match.
   }
 }

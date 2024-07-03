@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { Suspense, lazy, useState } from "react";
-import { handleLogin } from "./pages/util/auth";
+import LoadingPage from "./pages/LoadingPage";
 import "./stylesheets/App.css";
 
 // React.lazy() prevents the loading of pages until absolutely necessary to optimize user experience.
@@ -53,7 +53,7 @@ function App() {
 
       <CookiesProvider>
         <BrowserRouter>
-          <Suspense>
+          <Suspense fallback={<LoadingPage />}>
             <Routes>
               <Route element={<PrivateRoutes />}>
                 <Route path="/" element={<HomePage />} />
