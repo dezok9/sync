@@ -1,7 +1,7 @@
 function Post(postInfo) {
   return (
     <>
-      <div></div>
+      <div>Post</div>
     </>
   );
 }

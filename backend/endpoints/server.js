@@ -9,6 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 const auth = require("./auth")(app);
+const posts = require("./posts")(app);
 
 app.listen(PORT, () => {
   console.log("Server is running.");

@@ -7,7 +7,6 @@ import "./stylesheets/LoginPage.css";
 
 function LoginPage() {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
-
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
 
@@ -31,13 +30,17 @@ function LoginPage() {
   async function login() {
     if (user.replace(" ", "") !== "" && password.replace(" ", "") !== "") {
       const loginData = await handleLogin(user, password);
-      const validLogin = loginData[0];
-      const userData = loginData[1];
+      if (loginData) {
+        const validLogin = loginData[0];
+        const userData = loginData[1];
 
-      if (validLogin) {
-        setCookies("user", userData, { path: "/", maxAge: 3600 });
+        if (validLogin) {
+          setCookies("user", userData, { path: "/", maxAge: 3600 });
 
-        navigate("/");
+          navigate("/");
+        }
+      } else {
+        // Incorrect login information.
       }
     }
   }

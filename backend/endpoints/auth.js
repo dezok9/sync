@@ -90,41 +90,4 @@ module.exports = function (app) {
       }
     });
   });
-
-  //////////////////TO BE MOVED/////////////////////////////
-
-  /***
-   * Gets the user data from the database.
-   * If not found, returns a status of 404.
-   */
-  app.get("/user/:user", async (req, res) => {
-    const userHandle = req.params.user;
-
-    const user = await prisma.user.findUnique({
-      where: { userHandle: userHandle },
-    });
-
-    const posts = await prisma.post.findMany({
-      where: { authorID: user.id },
-    });
-
-    const userData = {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      githubHandle: user.githubHandle,
-      email: user.email,
-      userHandle: user.userHandle,
-      businessAccount: user.businessAccount,
-      profilePicture: user.profilePicture,
-      featuredProjects: user.featuredProjects,
-      posts: posts,
-    };
-
-    if (userData) {
-      res.status(200).json(userData);
-    } else {
-      res.status(404).json();
-    }
-  });
 };
