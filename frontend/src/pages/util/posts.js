@@ -1,7 +1,8 @@
 const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
+const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 
 /***
- *
+ * Gets the user feed data given the ID of the user.
  */
 export async function getFeed(userID) {
   // Get posts from connections from database.
@@ -21,7 +22,25 @@ export async function getUserData(userHandle) {
     const userData = await response.json();
 
     return userData;
-  } catch {}
+  } catch {
+    window.location.assign(`${WEB_ADDRESS}/404`);
+  }
+}
+
+/***
+ * Gets the user's post given the ID of the user.
+ */
+export async function getUserPosts(userID) {
+  try {
+    const response = await fetch(`${DATABASE}/posts/${userID}`);
+
+    if (response.ok) {
+      const userPosts = await response.json();
+      return userPosts;
+    } else {
+      return null;
+    }
+  } catch (e) {}
 }
 
 /***
@@ -31,6 +50,19 @@ export async function createPost(postInfo) {
   const { title, text, authorID, mediaURLs, date, timestamp } = postInfo;
 
   try {
-    const response = await fetch(`${DATABASE}/create-post`);
+    const response = await fetch(`${DATABASE}/create-post`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: title,
+        text: text,
+        authorID: authorID,
+        mediaURLs: mediaURLs,
+        date: date,
+        timestamp: timestamp,
+      }),
+    });
   } catch {}
 }

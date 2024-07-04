@@ -52,6 +52,7 @@ model Post {
   date                String
   timestamp           String
   text                String
+  upvotes             Int           @default(0)
 
   authorID            Int
   author              User          @relation(fields: [authorID], references: [id], onDelete: Cascade)

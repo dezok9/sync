@@ -113,9 +113,13 @@ export async function handleLogin(user, password) {
       }),
     });
 
-    const userData = await validLogin.json();
+    if (validLogin.ok) {
+      const userData = await validLogin.json();
 
-    return [validLogin, userData.userData];
+      return [validLogin, userData.userData];
+    } else {
+      return null;
+    }
   } catch (err) {}
 }
 

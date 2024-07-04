@@ -1,4 +1,4 @@
-function FeaturedProject(featuredProjectData) {
+function FeaturedProject(featuredProjectInfo) {
   return (
     <>
       <div>Featured Project</div>

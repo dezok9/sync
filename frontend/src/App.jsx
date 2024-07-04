@@ -8,6 +8,8 @@ import {
 import { CookiesProvider, useCookies } from "react-cookie";
 import { Suspense, lazy, useState } from "react";
 import LoadingPage from "./pages/LoadingPage";
+import Page404 from "./pages/Page404";
+
 import "./stylesheets/App.css";
 
 // React.lazy() prevents the loading of pages until absolutely necessary to optimize user experience.
@@ -27,7 +29,6 @@ import Footer from "./components/Footer";
 
 function App() {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
-  const [isAuthenticated, setIsAuthenticated] = useState(cookies.user != null);
 
   // For routes requiring that the user is logged in.
   const PrivateRoutes = () => {
@@ -40,7 +41,7 @@ function App() {
 
   // For routes requiring that users are logged out (i.e. signup & login).
   const AuthRoutes = () => {
-    if (isAuthenticated) {
+    if (cookies.user) {
       return <Navigate to="/" />;
     } else {
       return <Outlet />;
@@ -71,6 +72,7 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
               </Route>
               <Route path="/auth" element={<GitHubAuthRedirect />} />
+              <Route path="/404" element={<Page404 />} />
             </Routes>
           </Suspense>
         </BrowserRouter>

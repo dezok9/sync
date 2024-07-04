@@ -1,4 +1,5 @@
 // Endpoints for retrieval of user data.
+// Exported to server.js.
 
 module.exports = function (app) {
   const { PrismaClient } = require("@prisma/client");
@@ -15,34 +16,51 @@ module.exports = function (app) {
    * If not found, returns a status of 404.
    */
   app.get("/user/:userHandle", async (req, res) => {
-    const userHandle = req.params.userHandle;
+    try {
+      const userHandle = req.params.userHandle;
 
-    const user = await prisma.user.findUnique({
-      where: { userHandle: userHandle },
-    });
+      const user = await prisma.user.findUnique({
+        where: { userHandle: userHandle },
+      });
 
-    const posts = await prisma.post.findMany({
-      where: { authorID: user.id },
-    });
+      const posts = await prisma.post.findMany({
+        where: { authorID: user.id },
+      });
 
-    if (user) {
-      const userData = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        githubHandle: user.githubHandle,
-        email: user.email,
-        userHandle: user.userHandle,
-        businessAccount: user.businessAccount,
-        profilePicture: user.profilePicture,
-        featuredProjects: user.featuredProjects,
-        posts: posts,
-      };
+      if (user) {
+        const userData = {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          githubHandle: user.githubHandle,
+          email: user.email,
+          userHandle: user.userHandle,
+          businessAccount: user.businessAccount,
+          profilePicture: user.profilePicture,
+          featuredProjects: user.featuredProjects,
+          posts: posts,
+        };
 
-      res.status(200).json(userData);
-    } else {
+        res.status(200).json(userData);
+      }
+    } catch (e) {
       res.status(404).json();
     }
+  });
+
+  /***
+   * Gets the user's posts from the database.
+   */
+  app.get("/posts/:userID", async (req, res) => {
+    const userID = req.params.userID;
+
+    const userPosts = await prisma.post.findMany({
+      where: {
+        authorID: Number(userID),
+      },
+    });
+
+    res.status(200).json(userPosts);
   });
 
   /***
@@ -64,7 +82,7 @@ module.exports = function (app) {
       },
     });
 
-    res.status(200).json;
+    res.status(200).json();
   });
 
   /***
@@ -128,7 +146,6 @@ module.exports = function (app) {
       });
 
       // Append the most recent posts of that user to the array.
-
       connectionsIdx += 1;
     }
 

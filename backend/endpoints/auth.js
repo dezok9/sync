@@ -72,6 +72,11 @@ module.exports = function (app) {
       where: { userHandle: userHandle },
     });
 
+    if (!user) {
+      res.status(401).json();
+      return;
+    }
+
     bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
       if (valid) {
         const userData = {

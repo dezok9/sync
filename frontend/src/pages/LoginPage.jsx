@@ -36,7 +36,6 @@ function LoginPage() {
 
         if (validLogin) {
           setCookies("user", userData, { path: "/", maxAge: 3600 });
-
           navigate("/");
         }
       } else {

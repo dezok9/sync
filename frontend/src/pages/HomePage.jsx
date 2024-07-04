@@ -25,13 +25,12 @@ async function loadFeedData(userID) {
   return feedPostsData;
 }
 
-// Default function.
-
 function HomePage() {
   // Enums for post and feed data.
   const TITLE = "title";
   const TEXT = "text";
   const MEDIA = "media";
+  const TAGS = "tags";
 
   // Modal useStates.
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,7 +38,10 @@ function HomePage() {
     [TITLE]: "",
     [TEXT]: "",
     [MEDIA]: [],
+    [TAGS]: [],
   });
+  const [titleInvalidWarning, setTitleInvalidWarning] = useState(false);
+  const [textInvalidWarning, setTextInvalidWarning] = useState(false);
 
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +63,15 @@ function HomePage() {
    */
   function handleModalView() {
     setModalOpen(!modalOpen);
+
+    if (modalOpen) {
+      postContent[TEXT] = "";
+      postContent[TITLE] = "";
+      postContent[MEDIA] = [];
+      postContent[TAGS] = [];
+      setTitleInvalidWarning(false);
+      setTextInvalidWarning(false);
+    }
   }
 
   /***
@@ -110,17 +121,16 @@ function HomePage() {
 
     const hours = dateObject.getHours();
     const minutes = dateObject.getMinutes();
-    const seconds = dateObject.getSeconds();
 
     const date = [MONTHS[month], day + ",", year].join(" ");
 
-    const timestamp = [
-      hours,
-      minutes,
-      (seconds.toString().length == 2 ? "" : "0") + seconds,
+    let timestamp = [
+      hours % 12 == 0 ? "12" : hours % 12,
+      minutes.toString().length === 1 ? "0" + minutes : minutes,
     ].join(":");
+    timestamp = timestamp + (hours <= 12 ? "AM" : "PM");
 
-    // Call util function.
+    // Call util function if fields valid.
     const postInfo = {
       title: postContent[TITLE],
       text: postContent[TEXT],
@@ -130,7 +140,24 @@ function HomePage() {
       timestamp: timestamp,
     };
 
+    if (postContent[TITLE].replace(" ", "") === "") {
+      setTitleInvalidWarning(true);
+    } else {
+      setTitleInvalidWarning(false);
+    }
+
+    if (postContent[TEXT].replace(" ", "") === "") {
+      setTextInvalidWarning(true);
+    } else {
+      setTextInvalidWarning(false);
+    }
+
+    if (textInvalidWarning || titleInvalidWarning) {
+      return;
+    }
+
     createPost(postInfo);
+    handleModalView();
   }
 
   // Retrieve data upon page reload & cookies change.
@@ -174,6 +201,11 @@ function HomePage() {
                 value={postContent[TITLE]}
                 onChange={handleInputChange}
               ></input>
+              <p
+                className={"warning " + (titleInvalidWarning ? "show" : "hide")}
+              >
+                Title of post can't be empty
+              </p>
             </div>
             <div>
               <input
@@ -183,6 +215,11 @@ function HomePage() {
                 value={postContent[TEXT]}
                 onChange={handleInputChange}
               ></input>
+              <p
+                className={"warning " + (textInvalidWarning ? "show" : "hide")}
+              >
+                Body of post can't be empty
+              </p>
             </div>
             <div>
               <p>Media</p>
