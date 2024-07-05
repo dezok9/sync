@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { githubAuthentication } from "./util/auth";
 
 function GitHubAuthRedirect() {
