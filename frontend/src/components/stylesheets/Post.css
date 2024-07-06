@@ -9,3 +9,7 @@
 .date-time {
   color: rgba(255, 255, 255, 0.5);
 }
+
+.upvote:hover {
+  cursor: pointer;
+}

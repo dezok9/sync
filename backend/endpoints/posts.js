@@ -151,4 +151,57 @@ module.exports = function (app) {
 
     res.status(200).json();
   });
+
+  /***
+   * Upvotes or downvotes a post.
+   * Ensures and enforces that a user can only upvote a unique post once.
+   */
+  app.put("/upvote/:postID", async (req, res) => {
+    const postID = req.params.postID;
+    const { userID, newUpvotes } = req.body;
+
+    const postUserLikes = await prisma.upvote.findMany({
+      where: {
+        postID: Number(postID),
+        userUpvoteID: userID,
+      },
+    });
+
+    if (postUserLikes.length === 0) {
+      // The user has not liked this post before.
+      await prisma.post.update({
+        where: {
+          id: Number(postID),
+        },
+        data: {
+          upvoteCount: newUpvotes,
+        },
+      });
+
+      await prisma.upvote.create({
+        data: {
+          postID: Number(postID),
+          userUpvoteID: userID,
+        },
+      });
+    } else {
+      // The user has liked this post before.
+      await prisma.post.update({
+        where: {
+          id: Number(postID),
+        },
+        data: {
+          upvoteCount: newUpvotes - 2,
+        },
+      });
+
+      await prisma.upvote.delete({
+        where: {
+          id: postUserLikes[0].id,
+        },
+      });
+    }
+
+    res.status(200).json();
+  });
 };

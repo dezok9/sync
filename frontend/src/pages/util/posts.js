@@ -66,3 +66,21 @@ export async function createPost(postInfo) {
     });
   } catch {}
 }
+
+/***
+ * Upvotes or downvotes post using endpoint.
+ */
+export async function upvotePost(postID, userID, newUpvotes) {
+  try {
+    const response = await fetch(`${DATABASE}/upvote/${postID}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+      body: JSON.stringify({
+        userID: userID,
+        newUpvotes: newUpvotes,
+      }),
+    });
+  } catch {}
+}
