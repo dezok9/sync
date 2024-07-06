@@ -46,7 +46,7 @@ function HomePage() {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState({});
-  const [feedData, setFeedData] = useState({});
+  const [feedData, setFeedData] = useState([]);
 
   const navigate = useNavigate();
 
@@ -83,14 +83,6 @@ function HomePage() {
       ...previousPostContent,
       [inputID]: event.target.value,
     }));
-  }
-
-  /***
-   * Helper function to be mapped to for rendering posts.
-   * Calls on the post component.
-   */
-  function renderPosts() {
-    return <></>;
   }
 
   /***
@@ -189,7 +181,11 @@ function HomePage() {
           <h3>{`Welcome, ${userData.firstName}`}</h3>
           <button onClick={() => logOut()}>Log Out</button>
           <button onClick={handleModalView}>Create Post</button>
-          <section className="feed">{renderPosts()}</section>
+          <section className="feed">
+            {feedData.map((postData) => (
+              <Post key={postData.id} postInfo={postData[0]} />
+            ))}
+          </section>
 
           <div className={"modal " + (modalOpen ? "show" : "hide")}>
             <div>

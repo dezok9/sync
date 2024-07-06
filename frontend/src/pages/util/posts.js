@@ -7,10 +7,14 @@ const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 export async function getFeed(userID) {
   // Get posts from connections from database.
   try {
-    const response = await fetch(`${DATABASE}/${userID}/feed`);
+    const response = await fetch(`${DATABASE}/${userID}/feed`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     const feedData = await response.json();
     return feedData;
-  } catch {}
+  } catch (error) {}
 }
 
 /***
@@ -84,3 +88,13 @@ export async function upvotePost(postID, userID, newUpvotes) {
     });
   } catch {}
 }
+
+/***
+ * Gets the connections of a user.
+ */
+export async function getConnections(user) {}
+
+/***
+ * Connects with another user.
+ */
+export async function connect(senderID, recipientID) {}

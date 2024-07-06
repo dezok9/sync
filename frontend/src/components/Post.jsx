@@ -9,6 +9,7 @@ function Post(postInfo) {
     <>
       <div className="post">
         <h1>{postInfo.postInfo.title}</h1>
+        <p>Author ID: {postInfo.postInfo.authorID}</p>
         <p>{postInfo.postInfo.text}</p>
         <p className="date-time">{postInfo.postInfo.date}</p>
         <p className="date-time">{postInfo.postInfo.timestamp}</p>

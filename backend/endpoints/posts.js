@@ -11,6 +11,9 @@ module.exports = function (app) {
   // Determines how many posts should be loaded initailly to feed.
   const FEED_LOAD_POSTS = 20;
 
+  // Determines how many posts should be taken from each user.
+  const USER_POSTS = 2;
+
   /***
    * Gets the user data from the database.
    * If not found, returns a status of 404.
@@ -132,9 +135,9 @@ module.exports = function (app) {
     ) {
       const connection = connections[connectionsIdx];
 
-      let connectionID = -1;
       // Get the ID of the other user in the connection.
-      if (connection.recipientID === userID) {
+      let connectionID = -1;
+      if (connection.recipientID == userID) {
         connectionID = connection.senderID;
       } else {
         connectionID = connection.recipientID;
@@ -143,13 +146,16 @@ module.exports = function (app) {
       // Get the posts made by that user using the userID.
       const userPosts = await prisma.post.findMany({
         where: { authorID: connectionID },
+        orderBy: { id: "desc" },
+        take: USER_POSTS,
       });
 
       // Append the most recent posts of that user to the array.
+      feedPosts.push(userPosts);
       connectionsIdx += 1;
     }
 
-    res.status(200).json();
+    res.status(200).json(feedPosts);
   });
 
   /***

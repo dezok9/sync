@@ -17,12 +17,13 @@
   border-radius: 10px;
 }
 
+.feed {
+  width: 100%;
+}
+
 .modal-input {
   padding: 2% 10%;
   width: 75%;
-}
-
-.body-input {
 }
 
 .hide {
