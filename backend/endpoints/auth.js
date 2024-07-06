@@ -1,20 +1,17 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-const bycrypt = require("bcrypt");
-const cors = require("cors");
-const express = require("express");
-const expressValidator = require("express-validator");
-
-const SALT_ROUNDS = 14;
-const PORT = 3000;
-
-const app = express();
-app.use(express.json());
-app.use(cors());
-
 // Endpoints for login and authentication.
 
-/***
+
+module.exports = function (app) {
+  const { PrismaClient } = require("@prisma/client");
+  const prisma = new PrismaClient();
+  const cors = require("cors");
+  const express = require("express");
+  const expressValidator = require("express-validator");
+  const bycrypt = require("bcrypt");
+
+  const SALT_ROUNDS = 14;
+
+ /***
  * Checks to see if credentials are unique before signup.
  * Additionally, checks for valid GitHub and email address.
  * Returns 200 (OK) if no records matching the provided handles are found in the database and verified fields.
@@ -69,62 +66,49 @@ app.post("/check-credentials", async (req, res) => {
   }
 });
 
-/***
- * Creates a new user.
- * Returns 201 if successful and 500 otherwise.
- */
-app.post("/create-user", async (req, res) => {
-  const { firstName, lastName, userHandle, email, githubHandle, password } =
-    req.body;
+  /***
+   * Creates a new user.
+   * Returns 201 if successful and 500 otherwise.
+   */
+  app.post("/create-user", async (req, res) => {
+    const { firstName, lastName, userHandle, email, githubHandle, password } =
+      req.body;
 
-  bycrypt.hash(password, SALT_ROUNDS, async function (err, hashed) {
-    try {
-      await prisma.user.create({
-        data: {
-          firstName: firstName,
-          lastName: lastName,
-          userHandle: userHandle,
-          email: email,
-          githubHandle: githubHandle,
-          encryptedPassword: hashed,
-        },
-      });
+    bycrypt.hash(password, SALT_ROUNDS, async function (err, hashed) {
+      try {
+        await prisma.user.create({
+          data: {
+            firstName: firstName,
+            lastName: lastName,
+            userHandle: userHandle,
+            email: email,
+            githubHandle: githubHandle,
+            encryptedPassword: hashed,
+          },
+        });
 
-      res.status(201).json();
-    } catch (err) {
-      res.status(500).json({ "error:": err.message });
+        res.status(201).json();
+      } catch (err) {
+        res.status(500).json({ "error:": err.message });
+      }
+    });
+  });
+
+  /***
+   * Attempts to log in using the provided credentials.
+   * Returns 200 for successful log in attempt and a 401 otherwise.
+   */
+  app.post("/login", async (req, res) => {
+    const { userHandle, password } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { userHandle: userHandle },
+    });
+
+    if (!user) {
+      res.status(401).json();
+      return;
     }
-  });
-});
 
-/***
- * Attempts to log in using the provided credentials.
- * Returns 200 for successful log in attempt and a 401 otherwise.
- */
-app.post("/login", async (req, res) => {
-  const { userHandle, password } = req.body;
-  const user = await prisma.user.findUnique({
-    where: { userHandle: userHandle },
-  });
-
-  bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
-    if (valid) {
-      const userData = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        githubHandle: user.githubHandle,
-        email: user.email,
-        userHandle: user.userHandle,
-        businessAccount: user.businessAccount,
-      };
-
-      res.status(200).json({ userData });
-    } else {
-      res.status(401).json({ "error:": err });
-    }
-  });
-});
 
 /***
  * Gets the user's GitHub authentication token and returns it.
@@ -166,6 +150,34 @@ app.post("/token-auth", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log("Server is running.");
-});
+
+/***
+ * Attempts to log in using the provided credentials.
+ * Returns 200 for successful log in attempt and a 401 otherwise.
+ */
+app.post("/login", async (req, res) => {
+  const { userHandle, password } = req.body;
+  const user = await prisma.user.findUnique({
+    where: { userHandle: userHandle },
+   });
+  
+    bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
+      if (valid) {
+        const userData = {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          githubHandle: user.githubHandle,
+          email: user.email,
+          userHandle: user.userHandle,
+          businessAccount: user.businessAccount,
+        };
+
+        res.status(200).json({ userData });
+      } else {
+        res.status(401).json({ "error:": err });
+      }
+    });
+  });
+};
+

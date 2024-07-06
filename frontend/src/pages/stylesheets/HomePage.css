@@ -4,4 +4,32 @@
   justify-content: center;
   align-items: center;
   margin: 5% 4%;
+  border: 2px solid black;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  width: 40%;
+  padding: 4%;
+  min-height: 50%;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+}
+
+.feed {
+  width: 100%;
+}
+
+.modal-input {
+  padding: 2% 10%;
+  width: 75%;
+}
+
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
 }

@@ -14,73 +14,101 @@ datasource db {
 }
 
 model User {
-  id                Int       @id @default(autoincrement())
-  email             String    @unique
-  userHandle        String    @unique
-  githubHandle      String    @unique
-  encryptedPassword String
-  firstName         String
-  lastName          String
-  businessAccount   Boolean   @default(false)
-  featuredProjects  String[]  @default([])
+  id                  Int           @id @default(autoincrement())
+  email               String        @unique
+  userHandle          String        @unique
+  githubHandle        String        @unique
+  encryptedPassword   String
+  firstName           String
+  lastName            String
+  profilePicture      String        @default("")
+  businessAccount     Boolean       @default(false)
+  featuredProjects    String[]      @default([])
 
-  posts             Post[]
-  comments          Comment[]
-  chatSenders       Chat[]    @relation(name: "chat sender")
-  chatRecipients    Chat[]    @relation(name: "chat recipient")
+  posts               Post[]        @relation(name: "post author")
+  comments            Comment[]
+  upvotedPosts        Upvote[]
+  chatSenders         Chat[]        @relation(name: "chat sender")
+  chatRecipients      Chat[]        @relation(name: "chat recipient")
+  connectionSender    Connection[]  @relation(name: "connection sender")
+  connectionRecipient Connection[]  @relation(name: "connection recipient")
+}
+
+model Connection {
+  id                  Int           @id @default(autoincrement())
+  accepted            Boolean       @default(false)
+
+  senderID            Int
+  sender              User          @relation(fields: [senderID], references: [id], name: "connection sender", onDelete: Cascade)
+
+  recipientID         Int
+  recipient           User          @relation(fields: [recipientID], references: [id], name: "connection recipient", onDelete: Cascade)
 }
 
 model Post {
-  id                Int       @id @default(autoincrement())
-  mediaURLs         String[]
-  tags              String[]
-  title             String
-  date              String
-  timestamp         String
-  text              String
+  id                  Int           @id @default(autoincrement())
+  mediaURLs           String[]      @default([])
+  tags                String[]      @default([])
+  title               String
+  date                String
+  timestamp           String
+  text                String
+  upvoteCount         Int           @default(0)
 
-  authorID          Int
-  author            User      @relation(fields: [authorID], references: [id])
+  authorID            Int
+  author              User          @relation(fields: [authorID], references: [id], onDelete: Cascade, name: "post author")
 
-  comments          Comment[]
+  upvotes             Upvote[]
+
+  comments            Comment[]
+}
+
+model Upvote {
+  id                  Int           @id @default(autoincrement())
+
+  postID              Int
+  post                Post          @relation(fields: [postID], references: [id])
+
+  userUpvoteID        Int
+  userUpvote          User          @relation(fields: [userUpvoteID], references: [id])
 }
 
 model Comment {
-  id                Int       @id @default(autoincrement())
-  commentText       String
-  date              String
-  timestamp         String
-  likes             Int       @default(0)
-  childComments     Comment[] @relation(name: "replies")
+  id                  Int           @id @default(autoincrement())
+  commentText         String
+  date                String
+  timestamp           String
+  upvotes             Int           @default(0)
+  childComments       Comment[]     @relation(name: "replies")
 
-  parentCommentID   Int
-  parentComment     Comment   @relation(fields: [parentCommentID], references: [id], name: "replies")
+  parentCommentID     Int?
+  parentComment       Comment?      @relation(fields: [parentCommentID], references: [id], name: "replies", onDelete: Cascade)
 
-  postID            Int
-  post              Post      @relation(fields: [postID], references: [id])
+  postID              Int
+  post                Post          @relation(fields: [postID], references: [id], onDelete: Cascade)
 
-  authorID          Int
-  author            User      @relation(fields: [authorID], references: [id])
+  authorID            Int
+  author              User          @relation(fields: [authorID], references: [id], onDelete: Cascade)
 }
 
 model Chat {
-  id                Int       @id @default(autoincrement())
+  id                  Int           @id @default(autoincrement())
 
-  senderID          Int
-  sender            User      @relation(fields: [senderID], references: [id], name: "chat sender")
+  senderID            Int
+  sender              User          @relation(fields: [senderID], references: [id], name: "chat sender")
 
-  recipientID       Int
-  recipient         User      @relation(fields: [recipientID], references: [id], name: "chat recipient")
+  recipientID         Int
+  recipient           User          @relation(fields: [recipientID], references: [id], name: "chat recipient", onDelete: Cascade)
 
-  messages          Message[]
+  messages            Message[]
 }
 
 model Message {
-  id                Int       @id @default(autoincrement())
-  text              String
-  date              String
-  timestamp         String
+  id                  Int           @id @default(autoincrement())
+  text                String
+  date                String
+  timestamp           String
 
-  chatID            Int
-  chat              Chat      @relation(fields: [chatID], references: [id])
+  chatID              Int
+  chat                Chat          @relation(fields: [chatID], references: [id], onDelete: Cascade)
 }

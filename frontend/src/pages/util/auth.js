@@ -1,10 +1,10 @@
-import { DATABASE } from "./data";
 import { Popup } from "../../components/Popup";
 
 const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = import.meta.env.VITE_GITHUB_CLIENT_SECRET;
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 const HUNTER_API_KEY = import.meta.env.VITE_HUNTER_API_KEY;
+const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
 
 const GITHUB_IDENTITY_URL = "https://github.com/login/oauth/authorize";
 
@@ -110,9 +110,13 @@ export async function handleLogin(user, password) {
       }),
     });
 
-    const userData = await validLogin.json();
+    if (validLogin.ok) {
+      const userData = await validLogin.json();
 
-    return [validLogin, userData.userData];
+      return [validLogin, userData.userData];
+    } else {
+      return null;
+    }
   } catch (err) {}
 }
 

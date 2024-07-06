@@ -1,0 +1,15 @@
+.post {
+  padding: 2% 5%;
+  margin: 2% 0%;
+  width: 25%;
+  border: 2px solid white;
+  border-radius: 10px;
+}
+
+.date-time {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.upvote:hover {
+  cursor: pointer;
+}

@@ -1,0 +1,5 @@
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  margin: 5% 8%;
+}
