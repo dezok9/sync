@@ -1,12 +1,12 @@
 import { Popup } from "../../components/Popup";
 
 const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
-const GITHUB_CLIENT_SECRET = import.meta.env.VITE_GITHUB_CLIENT_ID;
+const GITHUB_CLIENT_SECRET = import.meta.env.VITE_GITHUB_CLIENT_SECRET;
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
+const HUNTER_API_KEY = import.meta.env.VITE_HUNTER_API_KEY;
 const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
 
 const GITHUB_IDENTITY_URL = "https://github.com/login/oauth/authorize";
-const GITHUB_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
 
 /***
   Helper function to check if credentials are unique before signup.
@@ -21,6 +21,7 @@ export async function checkCredentials(userHandle, githubHandle, email) {
       userHandle,
       githubHandle,
       email,
+      emailAPIKey: HUNTER_API_KEY,
     }),
   });
 
@@ -31,11 +32,7 @@ export async function checkCredentials(userHandle, githubHandle, email) {
  * Handles user account creation.
  * Returns true or false depending on status of user creation.
  */
-export async function handleSignUp(
-  loginInfo,
-  validWarningOn,
-  setValidWarningsOn
-) {
+export async function handleSignUp(loginInfo) {
   const {
     firstName,
     lastName,
@@ -65,13 +62,13 @@ export async function handleSignUp(
     return false;
   }
 
-  const areCredentialsUnique = checkCredentials(
+  const areCredentialsUnique = await checkCredentials(
     userHandle,
     githubHandle,
     email
   );
 
-  if (areCredentialsUnique) {
+  if (await areCredentialsUnique) {
     try {
       const userCreation = await fetch(`${DATABASE}/create-user`, {
         method: "POST",
@@ -146,15 +143,41 @@ export async function githubAuthentication() {
   const code = urlParams.get("code");
   const state = urlParams.get("state");
 
-  const accessTokenParams = new URLSearchParams({
-    client_id: GITHUB_CLIENT_ID,
-    client_secret: GITHUB_CLIENT_SECRET,
-    code: code,
-    redirect_uri: `${WEB_ADDRESS}/login`,
-  });
+  const clientID = GITHUB_CLIENT_ID;
+  const clientSecret = GITHUB_CLIENT_SECRET;
 
-  if (state === localStorage.getItem("CSRFToken")) {
-    window.location.assign(`${GITHUB_ACCESS_TOKEN_URL}?${accessTokenParams}`);
+  if (code && state) {
+    if (state === localStorage.getItem("CSRFToken")) {
+      const response = await fetch(`${DATABASE}/token-auth`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientID: clientID,
+          clientSecret: clientSecret,
+          code: code,
+        }),
+      });
+
+      const token = await response.json();
+
+      if (token.access_token) {
+        // Successful request and retrieval of token.
+        // Store in database.
+      } else {
+        // Invalid or already fuffilled request for access token.
+        if (localStorage.getItem("gitHubAuthToken")) {
+          // Already fuffilled.
+        } else {
+          // Invalid request.
+        }
+      }
+    } else {
+      // Authentication failed.
+    }
+
+    window.location.assign(`${WEB_ADDRESS}/login`);
   } else {
     // Codes don't match.
   }
