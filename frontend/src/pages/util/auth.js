@@ -1,15 +1,41 @@
-import { DATABASE } from "./data";
-import { checkCredentials } from "./userVerification";
+import { Popup } from "../../components/Popup";
 
-const GITHUB_CODE_FETCH_URL = new URLSearchParams(
-  new URL("https://github.com/login/oauth/authorize").search
-);
+const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
+const GITHUB_CLIENT_SECRET = import.meta.env.VITE_GITHUB_CLIENT_ID;
+const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
+const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
+
+const GITHUB_IDENTITY_URL = "https://github.com/login/oauth/authorize";
+const GITHUB_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+
+/***
+  Helper function to check if credentials are unique before signup.
+ */
+export async function checkCredentials(userHandle, githubHandle, email) {
+  const status = await fetch(`${DATABASE}/check-credentials`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userHandle,
+      githubHandle,
+      email,
+    }),
+  });
+
+  return status.ok;
+}
 
 /***
  * Handles user account creation.
  * Returns true or false depending on status of user creation.
  */
-export async function handleSignUp(loginInfo) {
+export async function handleSignUp(
+  loginInfo,
+  validWarningOn,
+  setValidWarningsOn
+) {
   const {
     firstName,
     lastName,
@@ -25,17 +51,18 @@ export async function handleSignUp(loginInfo) {
       (userInput) => userInput.replace(" ", "") === ""
     )
   ) {
-    if (!(email && email.includes("."))) {
+    if (!(email && email.includes("@") && email.includes("."))) {
       // Invalid email address.
-      return;
+      return false;
     }
+
     if (password !== confirmPassword) {
       // Passwords don't match.
-      return;
+      return false;
     }
   } else {
     // Incomplete fields.
-    return;
+    return false;
   }
 
   const areCredentialsUnique = checkCredentials(
@@ -64,7 +91,8 @@ export async function handleSignUp(loginInfo) {
       return userCreation.ok;
     } catch (err) {}
   } else {
-    return res.status;
+    // Credentials are not unique.
+    return false;
   }
 }
 
@@ -85,15 +113,49 @@ export async function handleLogin(user, password) {
       }),
     });
 
-    const userData = await validLogin.json();
+    if (validLogin.ok) {
+      const userData = await validLogin.json();
 
-    return [validLogin, userData.userData];
+      return [validLogin, userData.userData];
+    } else {
+      return null;
+    }
   } catch (err) {}
 }
 
 /***
  * Function for rerouting to GitHub for authentication.
+ * Detailed instructions found here: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
  */
-export async function githubAuth() {
-  return;
+export async function getGithubIdentity(params) {
+  // Retrieve user data, construct URL, & redirect for sign in.
+  params["client_id"] = GITHUB_CLIENT_ID;
+  const identityParams = new URLSearchParams(params);
+
+  window.location.assign(`${GITHUB_IDENTITY_URL}?${identityParams}`);
+}
+
+/***
+ * Function for retrieving the GitHub access token for endpoint access.
+ * Detailed instructions found here: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
+ */
+export async function githubAuthentication() {
+  const params = window.location.href.split("?")[1];
+  const urlParams = new URLSearchParams(params);
+
+  const code = urlParams.get("code");
+  const state = urlParams.get("state");
+
+  const accessTokenParams = new URLSearchParams({
+    client_id: GITHUB_CLIENT_ID,
+    client_secret: GITHUB_CLIENT_SECRET,
+    code: code,
+    redirect_uri: `${WEB_ADDRESS}/login`,
+  });
+
+  if (state === localStorage.getItem("CSRFToken")) {
+    window.location.assign(`${GITHUB_ACCESS_TOKEN_URL}?${accessTokenParams}`);
+  } else {
+    // Codes don't match.
+  }
 }

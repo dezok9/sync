@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { handleSignUp } from "./util/auth";
 import { useNavigate } from "react-router-dom";
-import { githubAuth } from "./util/auth";
+import { handleSignUp, getGithubIdentity } from "./util/auth";
 import { Octokit } from "@octokit/rest";
 
 import "./stylesheets/SignUpPage.css";
@@ -17,6 +16,7 @@ function SignUpPage() {
   const GITHUB = "githubHandle";
   const PASSWORD = "password";
   const CONFIRM_PASSWORD = "confirmPassword";
+  const INCOMPLETE = "incomplete";
 
   // Use states for login contained in one object.
   const [loginInfo, setLoginInfo] = useState({
@@ -34,18 +34,42 @@ function SignUpPage() {
    */
   function handleInputChange(event) {
     const inputID = event.target.id;
-    setLoginInfo((prvs) => ({ ...prvs, [inputID]: event.target.value }));
+    setLoginInfo((previousLoginInfo) => ({
+      ...previousLoginInfo,
+      [inputID]: event.target.value,
+    }));
+  }
+
+  /***
+   * Helper function that generates a random string for the GitHub API call.
+   * The produced string is used to securely let user log in to GitHub and be verified on return to website.
+   */
+  function randomString(length) {
+    const CHARS =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    for (let i = 0; i < length; i++) {
+      result += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
+    }
+    return result;
   }
 
   /***
    * Helper function that creates a new account for the user.
-   * Navigates to the login page  on successful account creation.
+   * Navigates to the login page on successful account creation.
    */
   async function signUp() {
     const userCreated = await handleSignUp(loginInfo);
+    const state = randomString(20);
+
+    localStorage.setItem("CSRFToken", state);
 
     if (userCreated) {
-      navigate("/login");
+      getGithubIdentity({
+        login: loginInfo[GITHUB],
+        scope: "repo",
+        state: state,
+      });
     }
   }
 
@@ -81,6 +105,7 @@ function SignUpPage() {
             onChange={handleInputChange}
           ></input>
         </div>
+
         <div className="input-section">
           <h2>User Handle</h2>
           <input
@@ -119,6 +144,7 @@ function SignUpPage() {
             onChange={handleInputChange}
           ></input>
         </div>
+
         <p>
           Already have an account?{" "}
           <button onClick={() => navigate("/login")}>Log in</button> instead.

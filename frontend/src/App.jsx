@@ -7,7 +7,9 @@ import {
 } from "react-router-dom";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { Suspense, lazy, useState } from "react";
-import { handleLogin } from "./pages/util/auth";
+import LoadingPage from "./pages/LoadingPage";
+import Page404 from "./pages/Page404";
+
 import "./stylesheets/App.css";
 
 // React.lazy() prevents the loading of pages until absolutely necessary to optimize user experience.
@@ -20,17 +22,17 @@ const ChatPage = lazy(() => import("./pages/ChatPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const GitHubAuthRedirect = lazy(() => import("./pages/GitHubAuthRedirect"));
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 function App() {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
-  const [isAuthenticated, setIsAuthenticated] = useState(cookies.user != null);
 
   // For routes requiring that the user is logged in.
   const PrivateRoutes = () => {
-    if (!isAuthenticated) {
+    if (!cookies.user) {
       return <Navigate to="/login" />;
     } else {
       return <Outlet />;
@@ -39,7 +41,7 @@ function App() {
 
   // For routes requiring that users are logged out (i.e. signup & login).
   const AuthRoutes = () => {
-    if (isAuthenticated) {
+    if (cookies.user) {
       return <Navigate to="/" />;
     } else {
       return <Outlet />;
@@ -52,19 +54,10 @@ function App() {
 
       <CookiesProvider>
         <BrowserRouter>
-          <Suspense>
+          <Suspense fallback={<LoadingPage />}>
             <Routes>
               <Route element={<PrivateRoutes />}>
-                <Route
-                  path="/"
-                  element={
-                    <HomePage
-                      cookies={{ cookies, setCookies, removeCookies }}
-                      isAuthenticated={isAuthenticated}
-                      setIsAuthenticated={setIsAuthenticated}
-                    />
-                  }
-                />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/chats" element={<AllChatsPage />} />
                 <Route path="/recommended" element={<RecommendedFeedPage />} />
                 <Route path="/profile/:userHandle" element={<ProfilePage />} />
@@ -76,16 +69,10 @@ function App() {
               </Route>
               <Route element={<AuthRoutes />}>
                 <Route path="/sign-up" element={<SignUpPage />} />
-                <Route
-                  path="/login"
-                  element={
-                    <LoginPage
-                      isAuthenticated={isAuthenticated}
-                      setIsAuthenticated={setIsAuthenticated}
-                    />
-                  }
-                />
+                <Route path="/login" element={<LoginPage />} />
               </Route>
+              <Route path="/auth" element={<GitHubAuthRedirect />} />
+              <Route path="/404" element={<Page404 />} />
             </Routes>
           </Suspense>
         </BrowserRouter>
