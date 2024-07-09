@@ -57,10 +57,58 @@ module.exports = function (app) {
   });
 
   /***
+   * Updates the connection database with a pending connecton.
+   * Called when a connection with a user requests a connection with another user.
+   */
+  app.post("/pending-connection/:userID/:connectionID", async (req, res) => {
+    const userID = req.params.userID;
+    const connectionID = req.params.connectionID;
+
+    await prisma.connection.create({
+      data: {
+        accepted: false,
+        senderID: userID,
+        recipientID: connectionID,
+      },
+    });
+
+    res.send(200).json();
+  });
+
+  /***
+   * Gets a connection.
+   */
+  app.get("/connection/:userID/:connectionID", async (req, res) => {
+    const userID = req.params.userID;
+    const connectionID = req.params.connectionID;
+
+    const connection = await prisma.connection.findMany({
+      where: {
+        OR: [
+          {
+            AND: [
+              { recipientID: Number(userID) },
+              { senderID: Number(connectionID) },
+            ],
+          },
+          {
+            AND: [
+              { recipientID: Number(connectionID) },
+              { senderID: Number(userID) },
+            ],
+          },
+        ],
+      },
+    });
+
+    res.status(200).json(connection);
+  });
+
+  /***
    * Updates the connections graph and database for the specified user.
    * Called when a connection with the specified user is accepted.
    */
-  app.put("/add-connection/:userID/:connectionID", async (req, res) => {
+  app.put("/connection/:userID/:connectionID", async (req, res) => {
     const userID = req.params.userID;
     const connectionID = req.params.connectionID;
 
@@ -86,7 +134,7 @@ module.exports = function (app) {
    * Updates the connections graph and database for the specified user.
    * Called when a connection with the specified user is removed.
    */
-  app.delete("/remove-connection/:userID/:connectionID", async (req, res) => {
+  app.delete("/connection/:userID/:connectionID", async (req, res) => {
     const userID = req.params.userID;
     const connectionID = req.params.connectionID;
 
@@ -95,14 +143,14 @@ module.exports = function (app) {
         OR: [
           {
             AND: [
-              { where: { recipientID: userID } },
-              { where: { senderID: connectionID } },
+              { recipientID: Number(userID) },
+              { senderID: Number(connectionID) },
             ],
           },
           {
             AND: [
-              { where: { recipientID: connectionID } },
-              { where: { senderID: userID } },
+              { recipientID: Number(connectionID) },
+              { senderID: Number(userID) },
             ],
           },
         ],
@@ -124,7 +172,12 @@ module.exports = function (app) {
 
     // Gets the connections of a user in order (most recent first; i.e. by ID of connection).
     const connections = await prisma.connection.findMany({
-      OR: [{ where: { recipientID: userID } }, { where: { senderID: userID } }],
+      where: {
+        OR: [
+          { where: { recipientID: Number(userID) } },
+          { where: { senderID: Number(userID) } },
+        ],
+      },
       orderBy: { id: "desc" },
     });
 
@@ -157,29 +210,30 @@ module.exports = function (app) {
       while (count < connectionsPoolSize && count <= userConnections.length) {
         // Retrieves the sorted connections of the user's connection (refered to as adjacent connections).
         const adjacentConnections = await prisma.connection.findMany({
-          OR: [
-            { where: { recipientID: userID } },
-            { where: { senderID: userID } },
-          ],
+          where: {
+            OR: [{ recipientID: userID }, { senderID: userID }],
+          },
           orderBy: { id: "desc" },
         });
 
         // Checks if adjacent connection is already connected with user.
         const connected = await prisma.connection.findMany({
-          OR: [
-            {
-              AND: [
-                { where: { recipientID: userID } },
-                { where: { senderID: userConnections[count] } },
-              ],
-            },
-            {
-              AND: [
-                { where: { recipientID: userConnections[count] } },
-                { where: { senderID: userID } },
-              ],
-            },
-          ],
+          where: {
+            OR: [
+              {
+                AND: [
+                  { recipientID: Number(userID) },
+                  { senderID: Number(connectionID) },
+                ],
+              },
+              {
+                AND: [
+                  { recipientID: Number(connectionID) },
+                  { senderID: Number(userID) },
+                ],
+              },
+            ],
+          },
         });
 
         // Tallies weighted recommendations if user is not connected with adjacent connection.

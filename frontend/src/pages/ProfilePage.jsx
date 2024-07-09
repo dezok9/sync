@@ -6,7 +6,10 @@ import Post from "../components/Post";
 import FeaturedProject from "../components/FeaturedProject";
 import LoadingPage from "./LoadingPage";
 
+import { CONNECT_STATUS } from "./util/enums";
+
 import "./stylesheets/ProfilePage.css";
+import { getConnectionStatus } from "./util/connections";
 
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 
@@ -32,11 +35,20 @@ async function loadUserPosts(userID) {
   return userPosts;
 }
 
+/***
+ * Helper function for asyncronously getting the status of a connection between two users.
+ */
+async function loadConnectionStatus(userID, connectionID) {
+  const userConnection = await getConnectionStatus(userID, connectionID);
+  return userConnection;
+}
+
 function ProfilePage() {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
   const [profileUserData, setProfileUserData] = useState({});
   const [userPosts, setUserPosts] = useState([]);
   const [featuredProjects, setFeaturedProjects] = useState([]);
+  const [connectionStatus, setConnectionStatus] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -62,6 +74,34 @@ function ProfilePage() {
   }
 
   /***
+   * Gets the connection button if depending on if the users are connected or the connection is pending.
+   */
+  function getConnectButton() {
+    switch (connectionStatus) {
+      case CONNECT_STATUS.CONNECTED:
+        return <button>Connected</button>;
+
+      case CONNECT_STATUS.REQUESTED:
+        return <button>Pending</button>;
+
+      case CONNECT_STATUS.TO_ACCEPT:
+        return (
+          <div>
+            <button>Accept</button>
+            <button>Ignore</button>
+          </div>
+        );
+
+      case CONNECT_STATUS.NOT_CONNECTED:
+        return <button>Connect</button>;
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  /***
    *  Returns profile information based on if the user is viewing their own profile or the profile of another user.
    */
   function profileInfo() {
@@ -74,7 +114,7 @@ function ProfilePage() {
     } else {
       return (
         <>
-          <div> </div>
+          <div>{getConnectButton()}</div>
         </>
       );
     }
@@ -87,9 +127,16 @@ function ProfilePage() {
       await setProfileUserData(profileUserData);
 
       await setFeaturedProjects(profileUserData.featuredProjects);
-      const userPosts = await loadUserPosts(profileUserData.id);
 
+      const userPosts = await loadUserPosts(profileUserData.id);
       await setUserPosts(userPosts);
+
+      const connectionStatus = await loadConnectionStatus(
+        cookies.user.id,
+        profileUserData.id
+      );
+
+      await setConnectionStatus(connectionStatus);
     }
 
     loadData();
