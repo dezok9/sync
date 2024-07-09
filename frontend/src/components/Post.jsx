@@ -1,9 +1,11 @@
 import { useCookies } from "react-cookie";
 import { upvotePost } from "../pages/util/posts";
 import "./stylesheets/Post.css";
+import { useState } from "react";
 
 function Post(postInfo) {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [upvotes, setUpvotes] = useState(postInfo.postInfo.upvoteCount);
 
   return (
     <>
@@ -16,15 +18,15 @@ function Post(postInfo) {
         <p>
           <i
             className="fa-solid fa-arrow-up upvote"
-            onClick={() =>
+            onClick={() => {
               upvotePost(
                 postInfo.postInfo.id,
                 cookies.user.id,
                 postInfo.postInfo.upvoteCount + 1
-              )
-            }
+              );
+            }}
           ></i>{" "}
-          Upvotes: {postInfo.postInfo.upvoteCount}
+          Upvotes: {upvotes}
         </p>
       </div>
     </>

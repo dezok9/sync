@@ -23,6 +23,7 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const GitHubAuthRedirect = lazy(() => import("./pages/GitHubAuthRedirect"));
+const PendingConnections = lazy(() => import("./pages/PendingConnections"));
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -64,6 +65,10 @@ function App() {
                 <Route
                   path="/chat/:recipientUserHandle"
                   element={<ChatPage />}
+                />
+                <Route
+                  path="/connections/pending"
+                  element={<PendingConnections />}
                 />
                 <Route path="/search/s=:query" element={<SearchPage />} />
               </Route>

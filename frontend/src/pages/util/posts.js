@@ -32,6 +32,20 @@ export async function getUserData(userHandle) {
 }
 
 /***
+ * Gets the user data from the database given the userID of the user.
+ */
+export async function getUserDataID(userID) {
+  // try {
+  const response = await fetch(`${DATABASE}/user/id/${userID}`);
+  const userData = await response.json();
+
+  return userData;
+  // } catch {
+  //   window.location.assign(`${WEB_ADDRESS}/404`);
+  // }
+}
+
+/***
  * Gets the user's post given the ID of the user.
  */
 export async function getUserPosts(userID) {
@@ -88,13 +102,3 @@ export async function upvotePost(postID, userID, newUpvotes) {
     });
   } catch {}
 }
-
-/***
- * Gets the connections of a user.
- */
-export async function getConnections(user) {}
-
-/***
- * Connects with another user.
- */
-export async function connect(senderID, recipientID) {}

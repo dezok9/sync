@@ -19,9 +19,9 @@ export async function getConnectionStatus(userID, connectionID) {
         return CONNECT_STATUS.CONNECTED;
       } else {
         if (connection[0].senderID === userID) {
-          CONNECT_STATUS.REQUESTED;
+          return CONNECT_STATUS.REQUESTED;
         } else {
-          CONNECT_STATUS.RESPOND;
+          return CONNECT_STATUS.RESPOND;
         }
       }
     } else {
@@ -35,9 +35,45 @@ export async function getConnectionStatus(userID, connectionID) {
  */
 export async function removeConnection(userID, connectionID) {
   try {
-    await fetch(`${DATABASE}/connection/${userID}/${connection}`, {
+    await fetch(`${DATABASE}/connection/${userID}/${connectionID}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });
+  } catch {}
+}
+
+/***
+ * Adds a request connection to the database.
+ */
+export async function requestConnection(userID, connectionID) {
+  try {
+    await fetch(`${DATABASE}/connection/${userID}/${connectionID}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch {}
+}
+
+/***
+ * Updates the existing connection to be accepted.
+ */
+export async function addConnection(userID, connectionID) {
+  try {
+    await fetch(`${DATABASE}/connection/${userID}/${connectionID}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch {}
+}
+
+/***
+ * Gets the pending connection of a user given their ID.
+ */
+export async function getPendingConnections(userID) {
+  try {
+    const response = await fetch(`${DATABASE}/pending/${userID}`);
+    const pendingConnections = await response.json();
+
+    return pendingConnections;
   } catch {}
 }

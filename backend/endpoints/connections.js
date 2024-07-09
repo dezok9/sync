@@ -28,11 +28,11 @@ module.exports = function (app) {
       const connections = await prisma.connection.findMany({
         where: {
           AND: [
-            { where: { accepted: true } },
+            { accepted: true },
             {
               OR: [
-                { where: { senderID: userID } },
-                { where: { recipientID: userID } },
+                { senderID: Number(userID) },
+                { recipientID: Number(userID) },
               ],
             },
           ],
@@ -44,7 +44,7 @@ module.exports = function (app) {
 
       for (connection in connections) {
         const connectedUser =
-          connection[senderID] == userID
+          connection[senderID] == Number(userID)
             ? connection[recipientID]
             : connectin[senderID];
 
@@ -54,25 +54,6 @@ module.exports = function (app) {
       // Updates connections graph.
       connectionsGraph[userID] = connectionsArray;
     }
-  });
-
-  /***
-   * Updates the connection database with a pending connecton.
-   * Called when a connection with a user requests a connection with another user.
-   */
-  app.post("/pending-connection/:userID/:connectionID", async (req, res) => {
-    const userID = req.params.userID;
-    const connectionID = req.params.connectionID;
-
-    await prisma.connection.create({
-      data: {
-        accepted: false,
-        senderID: userID,
-        recipientID: connectionID,
-      },
-    });
-
-    res.send(200).json();
   });
 
   /***
@@ -112,22 +93,46 @@ module.exports = function (app) {
     const userID = req.params.userID;
     const connectionID = req.params.connectionID;
 
-    await prisma.connection.update({
+    const connection = await prisma.connection.findMany({
       where: {
         AND: [
-          { where: { senderID: connectionID } },
-          { where: { recipientID: userID } },
+          { senderID: Number(connectionID) },
+          { recipientID: Number(userID) },
         ],
+      },
+    });
+
+    await prisma.connection.update({
+      where: {
+        id: connection[0].id,
       },
       data: {
         accepted: true,
       },
     });
 
-    connectionsGraph[userID].push(connectionID);
-    connectionsGraph[connectionID].push(userID);
+    // Add connection to graph.
 
-    res.send(200).json();
+    res.status(200).json();
+  });
+
+  /***
+   * Adds a pending connection to the database.
+   * Called when a connection with a user requests a connection with another user.
+   */
+  app.post("/connection/:userID/:connectionID", async (req, res) => {
+    const userID = req.params.userID;
+    const connectionID = req.params.connectionID;
+
+    await prisma.connection.create({
+      data: {
+        accepted: false,
+        senderID: Number(userID),
+        recipientID: Number(connectionID),
+      },
+    });
+
+    res.status(200).json();
   });
 
   /***
@@ -157,10 +162,24 @@ module.exports = function (app) {
       },
     });
 
-    connectionsGraph[userID].pop(connectionID);
-    connectionsGraph[connectionID].pop(userID);
+    // Remove connection from graph.
 
-    res.send(200).json();
+    res.status(200).json();
+  });
+
+  /***
+   * Retrieves the pending requests of some user.
+   */
+  app.get("/pending/:userID", async (req, res) => {
+    const userID = req.params.userID;
+
+    const pendingConnections = await prisma.connection.findMany({
+      where: {
+        AND: [{ senderID: Number(userID) }, { accepted: false }],
+      },
+    });
+
+    res.status(200).json(pendingConnections);
   });
 
   /***
@@ -173,10 +192,7 @@ module.exports = function (app) {
     // Gets the connections of a user in order (most recent first; i.e. by ID of connection).
     const connections = await prisma.connection.findMany({
       where: {
-        OR: [
-          { where: { recipientID: Number(userID) } },
-          { where: { senderID: Number(userID) } },
-        ],
+        OR: [{ recipientID: Number(userID) }, { senderID: Number(userID) }],
       },
       orderBy: { id: "desc" },
     });
@@ -186,7 +202,7 @@ module.exports = function (app) {
 
     for (connection in connections) {
       const connectedUser =
-        connection[senderID] == userID
+        connection[senderID] == Number(userID)
           ? connection[recipientID]
           : connectin[senderID];
 
@@ -260,6 +276,6 @@ module.exports = function (app) {
 
     // Gets the most adjacent connections seen most frequently.
 
-    res.send(200).json(recommendations);
+    res.status(200).json(recommendations);
   });
 };
