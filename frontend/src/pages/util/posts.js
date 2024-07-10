@@ -90,11 +90,76 @@ export async function upvotePost(postID, userID, newUpvotes) {
 }
 
 /***
- * Gets the connections of a user.
+ * Gets a post based on a postID.
  */
-export async function getConnections(user) {}
+export async function getPost(postID) {
+  try {
+    const response = await fetch(`${DATABASE}/post/${postID}`);
+    const postData = await response.json();
+
+    return postData;
+  } catch {}
+}
 
 /***
- * Connects with another user.
+ * Adds a new comment to a post.
  */
-export async function connect(senderID, recipientID) {}
+export async function comment(commentData) {
+  try {
+    const { commentText, date, timestamp, parentCommentID, postID, authorID } =
+      commentData;
+
+    await fetch(`${DATABASE}/comment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        commentText: commentText,
+        date: date,
+        timestamp: timestamp,
+        parentComment: parentCommentID,
+        postID: postID,
+        authorID: authorID,
+      }),
+    });
+  } catch {}
+}
+
+/***
+ * Generates and returns the current date and time.
+ */
+export function generateDateTimestamp() {
+  // Generate date and timestamp.
+  const MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const dateObject = new Date();
+
+  const month = dateObject.getMonth();
+  const day = dateObject.getDate();
+  const year = dateObject.getFullYear();
+
+  const hours = dateObject.getHours();
+  const minutes = dateObject.getMinutes();
+
+  const date = [MONTHS[month], day + ",", year].join(" ");
+
+  let timestamp = [
+    hours % 12 === 0 ? "12" : hours % 12,
+    minutes.toString().length === 1 ? "0" + minutes : minutes,
+  ].join(":");
+  timestamp = timestamp + (hours <= 12 ? "AM" : "PM");
+
+  return { date: date, timestamp: timestamp };
+}

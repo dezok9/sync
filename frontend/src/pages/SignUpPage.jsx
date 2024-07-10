@@ -7,7 +7,6 @@ import "./stylesheets/SignUpPage.css";
 
 function SignUpPage() {
   const navigate = useNavigate();
-  const octokit = new Octokit();
 
   const FIRST_NAME = "firstName";
   const LAST_NAME = "lastName";
