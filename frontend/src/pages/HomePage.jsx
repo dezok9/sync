@@ -1,29 +1,16 @@
 import { Cookies, useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getFeed, getUserData, createPost } from "./util/posts";
+import {
+  getFeed,
+  getUserData,
+  createPost,
+  generateDateTimestamp,
+} from "./util/posts";
 import Post from "../components/Post";
 import LoadingPage from "./LoadingPage";
 
 import "./stylesheets/HomePage.css";
-
-// Helper asynchronous functions.
-
-/***
- * Helper function for asynchronously retrieving user data.
- */
-async function loadUserData(userHandle) {
-  const userData = await getUserData(userHandle);
-  return userData;
-}
-
-/***
- * Helper function for asyncronously retrieving post data for feed.
- */
-async function loadFeedData(userID) {
-  const feedPostsData = await getFeed(userID);
-  return feedPostsData;
-}
 
 function HomePage() {
   // Enums for post and feed data.
@@ -89,38 +76,7 @@ function HomePage() {
    *  Helper function for creating posts.
    */
   function handlePost() {
-    // Generate date and timestamp.
-    const MONTHS = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-
-    const dateObject = new Date();
-
-    const month = dateObject.getMonth();
-    const day = dateObject.getDate();
-    const year = dateObject.getFullYear();
-
-    const hours = dateObject.getHours();
-    const minutes = dateObject.getMinutes();
-
-    const date = [MONTHS[month], day + ",", year].join(" ");
-
-    let timestamp = [
-      hours % 12 == 0 ? "12" : hours % 12,
-      minutes.toString().length === 1 ? "0" + minutes : minutes,
-    ].join(":");
-    timestamp = timestamp + (hours <= 12 ? "AM" : "PM");
+    const { date, timestamp } = generateDateTimestamp();
 
     // Call util function if fields valid.
     const postInfo = {
@@ -156,10 +112,10 @@ function HomePage() {
   useEffect(() => {
     async function loadData() {
       // Retrieve data for the authenticated user.
-      const loadedUserData = await loadUserData(cookies.user.userHandle);
+      const loadedUserData = await getUserData(cookies.user.userHandle);
       await setUserData(loadedUserData);
 
-      const loadedFeedData = await loadFeedData(cookies.user.id);
+      const loadedFeedData = await getFeed(cookies.user.id);
       await setFeedData(loadedFeedData);
       // Retrieve data for the feed of the authenticated user.
     }

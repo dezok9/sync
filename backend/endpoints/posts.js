@@ -97,6 +97,9 @@ module.exports = function (app) {
       where: {
         authorID: Number(userID),
       },
+      orderBy: {
+        id: "desc",
+      },
     });
 
     res.status(200).json(userPosts);
@@ -122,6 +125,27 @@ module.exports = function (app) {
     });
 
     res.status(200).json();
+  });
+
+  /***
+   * Gets a post based on postID.
+   */
+  app.get("/post/:postID", async (req, res) => {
+    const postID = req.params.postID;
+
+    let postData = await prisma.post.findUnique({
+      where: { id: Number(postID) },
+    });
+
+    const comments = await prisma.comment.findMany({
+      where: {
+        postID: Number(postID),
+      },
+    });
+
+    postData = { ...postData, comments: comments };
+
+    res.status(200).json(postData);
   });
 
   /***
@@ -173,7 +197,8 @@ module.exports = function (app) {
 
       // Get the ID of the other user in the connection.
       let connectionID = -1;
-      if (connection.recipientID === userID) {
+
+      if (connection.recipientID === Number(userID)) {
         connectionID = connection.senderID;
       } else {
         connectionID = connection.recipientID;
@@ -243,6 +268,24 @@ module.exports = function (app) {
         },
       });
     }
+
+    res.status(200).json();
+  });
+
+  app.post("/comment", async (req, res) => {
+    const { commentText, date, timestamp, parentCommentID, postID, authorID } =
+      req.body;
+
+    await prisma.comment.create({
+      data: {
+        commentText: commentText,
+        date: date,
+        timestamp: timestamp,
+        parentCommentID: parentCommentID,
+        postID: Number(postID),
+        authorID: Number(authorID),
+      },
+    });
 
     res.status(200).json();
   });
