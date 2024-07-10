@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
-import {
-  comment,
-  getPost,
-  getUserData,
-  generateDateTimestamp,
-} from "./util/posts";
+import { getPost, generateDateTimestamp, createComment } from "./util/posts";
 
 import "./stylesheets/PostPage.css";
+import LoadingPage from "./LoadingPage";
+import CommentFamily from "../components/CommentFamily";
 
 // Gets the postID from the URL to allow for more dynamic lookup via the URL.
 const postURL = window.location.href.split("/");
@@ -16,8 +13,8 @@ const postID = postURL[postURL.length - 1];
 function Post() {
   const [isLoading, setIsLoading] = useState(true);
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
-  const [authenticatedUserData, setAuthenticatedUserData] = useState([]);
-  const [postData, setPostData] = useState([]);
+  const [postData, setPostData] = useState({});
+  const [commentData, setCommentData] = useState([]);
   const [postAuthorData, setPostAuthorData] = useState([]);
   const [commentText, setCommentText] = useState("");
 
@@ -36,7 +33,7 @@ function Post() {
       authorID: cookies.user.id,
     };
 
-    comment(commentData);
+    createComment(commentData);
   }
 
   /***
@@ -46,34 +43,72 @@ function Post() {
     setCommentText(event.target.value);
   }
 
+  /***
+   * Renders comments for post.
+   */
+  function renderComments() {
+    if (commentData.length === 0) {
+      return <div>Such void...</div>;
+    } else {
+      const commentFamilies = [];
+      const commentParents = commentData.filter(
+        (comment) => !comment.parentCommentID
+      );
+
+      for (const index in commentParents) {
+        const parent = commentParents[index];
+        const children = commentData.filter(
+          (comment) => comment.parentCommentID === parent.id
+        );
+        const family = [parent, children];
+
+        commentFamilies.push(family);
+      }
+
+      return (
+        <div>
+          {commentFamilies.map((commentFamily) => (
+            <CommentFamily commentFamily={commentFamily} />
+          ))}
+        </div>
+      );
+    }
+  }
+
   useEffect(() => {
     async function loadData() {
       const postData = await getPost(postID);
-      setPostData(postData);
-
-      const authenticatedUserData = await getUserData(cookies.user.userHandle);
-      setAuthenticatedUserData(authenticatedUserData);
+      await setPostData(postData);
+      await setCommentData(postData.comments);
     }
 
     loadData();
     setIsLoading(false);
   }, [cookies]);
 
-  return (
-    <div className="post">
-      <h2>{postData.title}</h2>
-      <p>{postData.text}</p>
+  if (isLoading) {
+    return <>{<LoadingPage />}</>;
+  } else {
+    return (
+      <div className="post">
+        <h2>{postData.title}</h2>
+        <p>{postData.text}</p>
 
-      <div>
-        <input
-          placeholder="Add to the conversation..."
-          value={commentText}
-          onChange={(event) => handleCommentChange(event)}
-        ></input>
-        <button onClick={() => makeComment()}>Comment</button>
+        <div>
+          <input
+            placeholder="Add to the conversation..."
+            value={commentText}
+            onChange={(event) => handleCommentChange(event)}
+          ></input>
+          <button onClick={() => makeComment()}>Comment</button>
+        </div>
+        <div>
+          <h3>Comments</h3>
+          {renderComments()}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default Post;

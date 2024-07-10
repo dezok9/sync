@@ -104,7 +104,7 @@ export async function getPost(postID) {
 /***
  * Adds a new comment to a post.
  */
-export async function comment(commentData) {
+export async function createComment(commentData) {
   try {
     const { commentText, date, timestamp, parentCommentID, postID, authorID } =
       commentData;
@@ -116,11 +116,23 @@ export async function comment(commentData) {
         commentText: commentText,
         date: date,
         timestamp: timestamp,
-        parentComment: parentCommentID,
+        parentCommentID: parentCommentID,
         postID: postID,
         authorID: authorID,
       }),
     });
+  } catch {}
+}
+
+/***
+ * Gets all comments for a post given the postID.
+ */
+export async function getComments(postID) {
+  try {
+    const response = await fetch(`${DATABASE}/post/${postID}/comments`);
+    const postComments = await response.json();
+
+    return postComments;
   } catch {}
 }
 

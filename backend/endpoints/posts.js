@@ -244,7 +244,7 @@ module.exports = function (app) {
         commentText: commentText,
         date: date,
         timestamp: timestamp,
-        parentComment: parentCommentID,
+        parentCommentID: parentCommentID,
         postID: Number(postID),
         authorID: Number(authorID),
       },
