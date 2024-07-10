@@ -10,6 +10,7 @@ app.use(cors());
 
 const auth = require("./auth")(app);
 const posts = require("./posts")(app);
+const connections = require("./connections")(app);
 
 app.listen(PORT, () => {
   console.log("Server is running.");
