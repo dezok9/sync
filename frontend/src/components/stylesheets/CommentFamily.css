@@ -1,0 +1,21 @@
+.children-comments {
+  margin-left: 2%;
+  padding: 1%;
+  border: 2px solid black;
+}
+
+.comment-family {
+  display: flex;
+  flex-direction: column;
+  padding: 2%;
+  border: 2px solid white;
+  border-radius: 10px;
+}
+
+.show {
+  display: block;
+}
+
+.hide {
+  display: none;
+}

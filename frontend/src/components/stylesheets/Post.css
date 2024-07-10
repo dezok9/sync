@@ -5,6 +5,9 @@
   border: 2px solid white;
   border-radius: 10px;
 }
+.post:hover {
+  cursor: pointer;
+}
 
 .date-time {
   color: rgba(255, 255, 255, 0.5);

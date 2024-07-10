@@ -23,6 +23,7 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const GitHubAuthRedirect = lazy(() => import("./pages/GitHubAuthRedirect"));
+const Post = lazy(() => import("./pages/PostPage"));
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -60,6 +61,7 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/chats" element={<AllChatsPage />} />
                 <Route path="/recommended" element={<RecommendedFeedPage />} />
+                <Route path="/post/:postID" element={<Post />} />
                 <Route path="/profile/:userHandle" element={<ProfilePage />} />
                 <Route
                   path="/chat/:recipientUserHandle"
