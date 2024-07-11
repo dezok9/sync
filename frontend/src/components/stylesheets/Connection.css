@@ -1,8 +1,8 @@
-.pending-connection {
+.connection {
   display: flex;
   border: 2px solid white;
   background-color: blue;
 }
-.pending-connection:hover {
+.connection:hover {
   cursor: pointer;
 }

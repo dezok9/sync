@@ -2,6 +2,8 @@ import { Popup } from "../../components/Popup";
 
 const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = import.meta.env.VITE_GITHUB_CLIENT_SECRET;
+const GITHUB_PERSONAL_ACCESS_TOKEN = import.meta.env
+  .VITE_GITHUB_PERSONAL_ACCESS_TOKEN;
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 const HUNTER_API_KEY = import.meta.env.VITE_HUNTER_API_KEY;
 const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
@@ -22,6 +24,7 @@ export async function checkCredentials(userHandle, githubHandle, email) {
       githubHandle,
       email,
       emailAPIKey: HUNTER_API_KEY,
+      githubPersonalAccessToken: GITHUB_PERSONAL_ACCESS_TOKEN,
     }),
   });
 

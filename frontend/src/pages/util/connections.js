@@ -31,6 +31,18 @@ export async function getConnectionStatus(userID, connectionID) {
 }
 
 /***
+ * Gets all of a user's connections.
+ */
+export async function getConnections(userID) {
+  try {
+    const response = await fetch(`${DATABASE}/connections/${userID}`);
+    const connections = await response.json();
+
+    return connections;
+  } catch {}
+}
+
+/***
  * Removes a connection between two users.
  */
 export async function removeConnection(userID, connectionID) {
@@ -75,5 +87,18 @@ export async function getPendingConnections(userID) {
     const pendingConnections = await response.json();
 
     return pendingConnections;
+  } catch {}
+}
+
+/***
+ * Gets a data for the recommended users.
+ */
+export async function getRecommendedUsers(userID, numberOfRecs) {
+  try {
+    const response = await fetch(
+      `${DATABASE}/connections/recommendations/${userID}/${numberOfRecs}`
+    );
+    const recommendationUserData = await response.json();
+    console.log(recommendationUserData);
   } catch {}
 }

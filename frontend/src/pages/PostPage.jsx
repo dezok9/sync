@@ -77,9 +77,9 @@ function Post() {
 
   useEffect(() => {
     async function loadData() {
-      const postData = await getPost(postID);
-      await setPostData(postData);
-      await setCommentData(postData.comments);
+      const loadedPostData = await getPost(postID);
+      await setPostData(loadedPostData);
+      await setCommentData(loadedPostData.comments);
     }
 
     loadData();

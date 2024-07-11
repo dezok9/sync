@@ -211,8 +211,11 @@ module.exports = function (app) {
         take: USER_POSTS,
       });
 
-      // Append the most recent posts of that user to the array.
-      feedPosts.push(userPosts);
+      // Append the most recent posts of that user to the array if not empty.
+      if (userPosts.length > 0) {
+        feedPosts = feedPosts.concat(userPosts);
+      }
+
       connectionsIdx += 1;
     }
 
@@ -272,6 +275,9 @@ module.exports = function (app) {
     res.status(200).json();
   });
 
+  /***
+   * Creates a comment for a post.
+   */
   app.post("/comment", async (req, res) => {
     const { commentText, date, timestamp, parentCommentID, postID, authorID } =
       req.body;
