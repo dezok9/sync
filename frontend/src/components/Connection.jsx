@@ -12,7 +12,9 @@ function Connection(connectionInfo) {
   return (
     <span
       className="connection"
-      onClick={() => navigate(`/profile/${connectionInfo.userHandle}`)}
+      onClick={() =>
+        navigate(`/profile/${connectionInfo.connectionInfo.userHandle}`)
+      }
     >
       <div>
         <h3>
