@@ -151,22 +151,26 @@ module.exports = function (app) {
       where: { userHandle: userHandle },
     });
 
-    bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
-      if (valid) {
-        const userData = {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          githubHandle: user.githubHandle,
-          email: user.email,
-          userHandle: user.userHandle,
-          businessAccount: user.businessAccount,
-        };
+    if (user) {
+      bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
+        if (valid) {
+          const userData = {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            githubHandle: user.githubHandle,
+            email: user.email,
+            userHandle: user.userHandle,
+            businessAccount: user.businessAccount,
+          };
 
-        res.status(200).json({ userData });
-      } else {
-        res.status(401).json({ "error:": err });
-      }
-    });
+          res.status(200).json({ userData });
+        } else {
+          res.status(401).json();
+        }
+      });
+    } else {
+      res.status(401).json();
+    }
   });
 };

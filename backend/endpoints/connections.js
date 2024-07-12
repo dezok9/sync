@@ -11,6 +11,27 @@ module.exports = function (app) {
   // Connections graph.
   let connectionsGraph = {};
 
+  // All tags.
+  const tags = [];
+
+  /***
+   * Calculates the Jaccard similarity between two sets by comparing arrays of IDs.
+   * Both sets should be IDs of the same objects.
+   */
+  function jaccardSetSimilarity(setOne, setTwo) {
+    let intersectionCount = 0;
+    let unionCount = setOne.length + setTwo.length;
+
+    for (setOneIndex in setOne) {
+      if (setTwo.includes(setOne[setOneIndex])) {
+        intersectionCount += 1;
+        unionCount -= 1;
+      }
+    }
+
+    return unionCount === 0 ? 0 : (intersectionCount / unionCount) * 100;
+  }
+
   /***
    * Produces a score out of 100 giving how similar different two user profiles are, indicating if they should be recommended.
    */
@@ -24,25 +45,39 @@ module.exports = function (app) {
       const upvotes = await prisma.upvote.findMany({
         where: { userUpvoteID: id },
       });
+      const connectionsData = await prisma.connection.findMany({
+        where: {
+          OR: [{ recipientID: id }, { senderID: id }],
+        },
+      });
 
-      const upvotedPosts = [];
+      let upvotedPosts = [];
+      let upvotedPostsIDs = [];
 
       for (upvotesIndex in upvotes) {
         const postData = await prisma.post.findUnique({
-          AND: [
-            { id: upvotes[upvotesIndex].postID },
-            { NOT: { authorID: id } },
-          ],
+          where: { id: upvotes[upvotesIndex].postID },
         });
-        upvotedPosts.concat(postData);
+        upvotedPosts = upvotedPosts.concat(postData);
+        upvotedPostsIDs = upvotedPostsIDs.concat(postData.id);
+      }
+
+      let connectedUsersIDs = [];
+
+      for (connectionsDataIndex in connectionsData) {
+        connectedUsersIDs = connectedUsersIDs.concat(
+          connectionsData[connectionsDataIndex].senderID === id
+            ? connectionsData[connectionsDataIndex].recipientID
+            : connectionsData[connectionsDataIndex].senderID
+        );
       }
 
       let tagFrequencies = {};
       let tagCount = 0;
 
       for (postsIndex in posts) {
-        for (tagIndex in posts[postIndex].tags) {
-          const tag = posts[postIndex].tags[tagIndex];
+        for (tagIndex in posts[postsIndex].tags) {
+          const tag = posts[postsIndex].tags[tagIndex];
           if (Object.keys(tagFrequencies).includes(tag)) {
             tagFrequencies = {
               ...tagFrequencies,
@@ -63,7 +98,9 @@ module.exports = function (app) {
         ...data,
         posts: posts,
         upvotedPosts: upvotedPosts,
+        upvotedPostsIDs: upvotedPostsIDs,
         tagFrequencies: tagFrequencies,
+        connectedUsersIDs: connectedUsersIDs,
       };
 
       return allUserData;
@@ -72,11 +109,21 @@ module.exports = function (app) {
     const userOneData = await getUserData(userOneID);
     const userTwoData = await getUserData(userTwoID);
 
-    const recommendationScore = 0; // A score out of 100 where 0 is not recommended and 100 is highly recommended.
+    // Evaluate the similarities between the userOne and userTwo;
+    const upvotedPostsSimilarity = jaccardSetSimilarity(
+      userOneData.upvotedPostsIDs,
+      userTwoData.upvotedPostsIDs
+    );
 
-    // Evaluate the connection between the userOne and userTwo;
+    const connectionsSimilarity = jaccardSetSimilarity(
+      userOneData.connectedUsersIDs,
+      userTwoData.connectedUsersIDs
+    );
 
-    return recommendationScore;
+    const similarityScore =
+      (upvotedPostsSimilarity + connectionsSimilarity) / 2; // A score out of 100 where 0 is not recommended and 100 is highly recommended.
+
+    return similarityScore;
   }
 
   // Endpoints.
@@ -362,7 +409,7 @@ module.exports = function (app) {
       // Gets "weighted" recommendations based on how many connections the user and their connections have in common.
       // The first n (numberOfRecs) are then returned.
       // More connections are looked through if enough recommendations have not been generated and the user still has connections to use to generate related connections.
-      const weightedRecommendations = {};
+      let weightedRecommendations = {};
 
       let connectionsPoolSize =
         SEED_RECENT_CONNECTIONS <= userConnectionsIDs.length
@@ -431,15 +478,28 @@ module.exports = function (app) {
 
           // Calculates weights for recommendations if user is not connected with adjacent connection and has not requested a connection with that user.
           if (connected.length === 0) {
-            const connectedUserRecommendationScore = getUserSimilarityScore(
-              Number(userID),
-              Number(userConnectionsIDs[count])
-            );
+            const connectedUserRecommendationScore =
+              await getUserSimilarityScore(
+                Number(userID),
+                Number(userConnectionsIDs[count])
+              );
 
-            const adjacentUserRecommendationScore = getUserSimilarityScore(
-              Number(userID),
-              adjacentConnectionUserID
-            );
+            const adjacentUserRecommendationScore =
+              await getUserSimilarityScore(
+                Number(userID),
+                adjacentConnectionUserID
+              );
+
+            // Recommendation score takes into accout the similarity of between the adjacent user and user and between the connected user and user.
+            const recommendationScore =
+              connectedUserRecommendationScore * (1 / 5) +
+              adjacentUserRecommendationScore * (4 / 5);
+
+            weightedRecommendations = {
+              ...weightedRecommendations,
+              [adjacentConnectionUserID]: recommendationScore,
+            };
+            recommendations.push(Number(adjacentConnectionUserID));
           }
         }
 
@@ -451,7 +511,7 @@ module.exports = function (app) {
         } else if (
           count < userConnectionsIDs.length &&
           count >= connectionsPoolSize &&
-          recommendatioins.length < numberOfRecs
+          recommendations.length < numberOfRecs
         ) {
           connectionsPoolSize =
             connectionsPoolSize * 2 <= userConnectionsIDs.length
@@ -461,7 +521,6 @@ module.exports = function (app) {
           break;
         }
       }
-
       // Gets the most adjacent connections seen most frequently using the weighted connections values.
 
       res.status(200).json(recommendations);

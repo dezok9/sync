@@ -15,7 +15,6 @@ import LoadingPage from "./LoadingPage";
 import { CONNECT_STATUS } from "./util/enums";
 
 import "./stylesheets/ProfilePage.css";
-// import connections from "../../../backend/endpoints/connections";
 
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 

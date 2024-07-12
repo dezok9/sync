@@ -35,14 +35,14 @@ export async function getUserData(userHandle) {
  * Gets the user data from the database given the userID of the user.
  */
 export async function getUserDataID(userID) {
-  // try {
-  const response = await fetch(`${DATABASE}/user/id/${userID}`);
-  const userData = await response.json();
+  try {
+    const response = await fetch(`${DATABASE}/user/id/${userID}`);
+    const userData = await response.json();
 
-  return userData;
-  // } catch {
-  //   window.location.assign(`${WEB_ADDRESS}/404`);
-  // }
+    return userData;
+  } catch {
+    window.location.assign(`${WEB_ADDRESS}/404`);
+  }
 }
 
 /***
