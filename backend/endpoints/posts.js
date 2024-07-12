@@ -175,7 +175,9 @@ module.exports = function (app) {
       });
 
       // Append the most recent posts of that user to the array.
-      feedPosts.push(userPosts);
+      if (userPosts.length > 0) {
+        feedPosts.push(userPosts);
+      }
       connectionsIdx += 1;
     }
 

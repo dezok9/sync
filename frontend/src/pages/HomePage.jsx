@@ -117,7 +117,6 @@ function HomePage() {
 
       const loadedFeedData = await getFeed(cookies.user.id);
       await setFeedData(loadedFeedData);
-      // Retrieve data for the feed of the authenticated user.
     }
 
     loadData();

@@ -23,6 +23,9 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const GitHubAuthRedirect = lazy(() => import("./pages/GitHubAuthRedirect"));
+const FeaturedProjectCreationPage = lazy(() =>
+  import("./pages/FeaturedProjectCreationPage")
+);
 const Post = lazy(() => import("./pages/PostPage"));
 
 import Header from "./components/Header";
@@ -66,6 +69,10 @@ function App() {
                 <Route
                   path="/chat/:recipientUserHandle"
                   element={<ChatPage />}
+                />
+                <Route
+                  path="/create-featured"
+                  element={<FeaturedProjectCreationPage />}
                 />
                 <Route path="/search/s=:query" element={<SearchPage />} />
               </Route>
