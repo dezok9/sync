@@ -36,13 +36,7 @@ function Post(postInfo) {
         <p>
           <i
             className="fa-solid fa-arrow-up upvote"
-            onClick={() => {
-              upvotePost(
-                postInfo.postInfo.id,
-                cookies.user.id,
-                postInfo.postInfo.upvoteCount + 1
-              );
-            }}
+            onClick={(event) => handleUpvote(event)}
           ></i>{" "}
           Upvotes: {upvotes}
         </p>

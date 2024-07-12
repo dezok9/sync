@@ -22,10 +22,13 @@ const ChatPage = lazy(() => import("./pages/ChatPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
-const GitHubAuthRedirect = lazy(() => import("./pages/GitHubAuthRedirect"));
-const PendingConnections = lazy(() => import("./pages/PendingConnections"));
-const Post = lazy(() => import("./pages/PostPage"));
+const PendingConnectionsPage = lazy(() =>
+  import("./pages/PendingConnectionsPage")
+);
+const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage"));
+const PostPage = lazy(() => import("./pages/PostPage"));
 
+const GitHubAuthRedirect = lazy(() => import("./pages/GitHubAuthRedirect"));
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -63,7 +66,7 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/chats" element={<AllChatsPage />} />
                 <Route path="/recommended" element={<RecommendedFeedPage />} />
-                <Route path="/post/:postID" element={<Post />} />
+                <Route path="/post/:postID" element={<PostPage />} />
                 <Route path="/profile/:userHandle" element={<ProfilePage />} />
                 <Route
                   path="/chat/:recipientUserHandle"
@@ -71,8 +74,9 @@ function App() {
                 />
                 <Route
                   path="/connections/pending"
-                  element={<PendingConnections />}
+                  element={<PendingConnectionsPage />}
                 />
+                <Route path="/connections" element={<ConnectionsPage />} />
                 <Route path="/search/s=:query" element={<SearchPage />} />
               </Route>
               <Route element={<AuthRoutes />}>

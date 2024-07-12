@@ -16,7 +16,13 @@ module.exports = function (app) {
    * Returns 200 (OK) if no records matching the provided handles are found in the database and verified fields.
    */
   app.post("/check-credentials", async (req, res) => {
-    const { userHandle, githubHandle, email, emailAPIKey } = req.body;
+    const {
+      userHandle,
+      githubHandle,
+      email,
+      emailAPIKey,
+      githubPersonalAccessToken,
+    } = req.body;
     const databaseInfo = await prisma.user.findMany({
       where: {
         OR: [
@@ -29,7 +35,8 @@ module.exports = function (app) {
 
     // Checking if user exists.
     const validGithubUserResponse = await fetch(
-      `https://api.github.com/users/${githubHandle}`
+      `https://api.github.com/users/${githubHandle}`,
+      { headers: { Authorization: `token ${githubPersonalAccessToken}` } }
     );
 
     // Checking if email is valid.
@@ -144,22 +151,26 @@ module.exports = function (app) {
       where: { userHandle: userHandle },
     });
 
-    bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
-      if (valid) {
-        const userData = {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          githubHandle: user.githubHandle,
-          email: user.email,
-          userHandle: user.userHandle,
-          businessAccount: user.businessAccount,
-        };
+    if (user) {
+      bycrypt.compare(password, user.encryptedPassword, function (err, valid) {
+        if (valid) {
+          const userData = {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            githubHandle: user.githubHandle,
+            email: user.email,
+            userHandle: user.userHandle,
+            businessAccount: user.businessAccount,
+          };
 
-        res.status(200).json({ userData });
-      } else {
-        res.status(401).json({ "error:": err });
-      }
-    });
+          res.status(200).json({ userData });
+        } else {
+          res.status(401).json();
+        }
+      });
+    } else {
+      res.status(401).json();
+    }
   });
 };

@@ -3,7 +3,7 @@ import { useCookies } from "react-cookie";
 import { getPendingConnections } from "./util/connections";
 
 import LoadingPage from "./LoadingPage";
-import PendingConnection from "../components/PendingConnection";
+import Connection from "../components/Connection";
 import "./stylesheets/PendingConnections.css";
 
 function PendingConnections() {
@@ -13,8 +13,10 @@ function PendingConnections() {
 
   useEffect(() => {
     async function loadData() {
-      const pendingConnections = await getPendingConnections(cookies.user.id);
-      setPendingConnections(pendingConnections);
+      const loadedPendingConnections = await getPendingConnections(
+        cookies.user.id
+      );
+      setPendingConnections(loadedPendingConnections);
     }
 
     loadData();
@@ -28,9 +30,9 @@ function PendingConnections() {
     return (
       <div className="page">
         <h1>Pending Connections</h1>
-        <div className="pending-connections">
+        <div className="connections">
           {pendingConnections.map((pendingConnection) => (
-            <PendingConnection pendingConnection={pendingConnection} />
+            <Connection connectionInfo={pendingConnection} />
           ))}
         </div>
       </div>

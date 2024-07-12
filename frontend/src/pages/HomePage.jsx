@@ -111,13 +111,11 @@ function HomePage() {
   // Retrieve data upon page reload & cookies change.
   useEffect(() => {
     async function loadData() {
-      // Retrieve data for the authenticated user.
       const loadedUserData = await getUserData(cookies.user.userHandle);
       await setUserData(loadedUserData);
 
       const loadedFeedData = await getFeed(cookies.user.id);
       await setFeedData(loadedFeedData);
-      // Retrieve data for the feed of the authenticated user.
     }
 
     loadData();
@@ -139,7 +137,7 @@ function HomePage() {
           <button onClick={handleModalView}>Create Post</button>
           <section className="feed">
             {feedData.map((postData) => (
-              <Post key={postData.id} postInfo={postData[0]} />
+              <Post key={postData.id} postInfo={postData} />
             ))}
           </section>
 

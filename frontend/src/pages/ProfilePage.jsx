@@ -15,7 +15,6 @@ import LoadingPage from "./LoadingPage";
 import { CONNECT_STATUS } from "./util/enums";
 
 import "./stylesheets/ProfilePage.css";
-// import connections from "../../../backend/endpoints/connections";
 
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 
@@ -125,20 +124,20 @@ function ProfilePage() {
   // Retrieve data upon page reload & cookies change.
   useEffect(() => {
     async function loadData() {
-      const profileUserData = await getUserData(profileUser);
-      await setProfileUserData(profileUserData);
+      const loadedProfileUserData = await getUserData(profileUser);
+      await setProfileUserData(loadedProfileUserData);
 
-      await setFeaturedProjects(profileUserData.featuredProjects);
+      await setFeaturedProjects(loadedProfileUserData.featuredProjects);
 
-      const userPosts = await getUserPosts(profileUserData.id);
+      const userPosts = await getUserPosts(loadedProfileUserData.id);
       await setUserPosts(userPosts);
 
-      const connectionStatus = await getConnectionStatus(
+      const loadedConnectionStatus = await getConnectionStatus(
         cookies.user.id,
-        profileUserData.id
+        loadedProfileUserData.id
       );
 
-      await setConnectionStatus(connectionStatus);
+      await setConnectionStatus(loadedConnectionStatus);
     }
 
     loadData();

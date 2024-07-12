@@ -1,4 +1,5 @@
 import { CONNECT_STATUS } from "./enums";
+import { getUserDataID } from "./posts";
 
 const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
 
@@ -27,6 +28,18 @@ export async function getConnectionStatus(userID, connectionID) {
     } else {
       return CONNECT_STATUS.NOT_CONNECTED;
     }
+  } catch {}
+}
+
+/***
+ * Gets all of a user's connections.
+ */
+export async function getConnections(userID) {
+  try {
+    const response = await fetch(`${DATABASE}/connections/${userID}`);
+    const connections = await response.json();
+
+    return connections;
   } catch {}
 }
 
@@ -75,5 +88,28 @@ export async function getPendingConnections(userID) {
     const pendingConnections = await response.json();
 
     return pendingConnections;
+  } catch {}
+}
+
+/***
+ * Gets a data for the recommended users.
+ */
+export async function getRecommendedUsers(userID, numberOfRecs) {
+  try {
+    let recommendations = [];
+
+    const recommendationIDsResponse = await fetch(
+      `${DATABASE}/connections/recommendations/${userID}/${numberOfRecs}`
+    );
+    const recommendationIDs = await recommendationIDsResponse.json();
+
+    for (const recommendationIDIndex in recommendationIDs) {
+      const recommendationUserData = await getUserDataID(
+        recommendationIDs[recommendationIDIndex]
+      );
+      recommendations = recommendations.concat(recommendationUserData);
+    }
+
+    return recommendations;
   } catch {}
 }
