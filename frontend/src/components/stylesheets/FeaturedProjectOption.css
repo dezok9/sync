@@ -1,0 +1,14 @@
+.visibility-tag {
+  padding: 1% 2%;
+  border-radius: 2px solid black;
+}
+
+.private-tag {
+  color: lightblue;
+  border-color: lightblue;
+}
+
+.public-tag {
+  color: lightpink;
+  border-color: lightpink;
+}

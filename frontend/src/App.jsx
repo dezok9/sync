@@ -30,6 +30,11 @@ const PostPage = lazy(() => import("./pages/PostPage"));
 
 const GitHubAuthRedirect = lazy(() => import("./pages/GitHubAuthRedirect"));
 
+const FeaturedProjectCreationPage = lazy(() =>
+  import("./pages/FeaturedProjectCreationPage")
+);
+
+
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
@@ -73,6 +78,9 @@ function App() {
                   element={<ChatPage />}
                 />
                 <Route
+                  path="/create-featured"
+                  element={<FeaturedProjectCreationPage />}
+                />
                   path="/connections/pending"
                   element={<PendingConnectionsPage />}
                 />

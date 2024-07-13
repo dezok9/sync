@@ -211,11 +211,11 @@ module.exports = function (app) {
         take: USER_POSTS,
       });
 
+
       // Append the most recent posts of that user to the array if not empty.
       if (userPosts.length > 0) {
         feedPosts = feedPosts.concat(userPosts);
       }
-
       connectionsIdx += 1;
     }
 
