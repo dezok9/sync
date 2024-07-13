@@ -1,22 +1,72 @@
 // Endpoints and graph for connections.
 
-module.exports = function (app) {
+const { connected } = require("process");
+
+module.exports = async function (app) {
   const { PrismaClient } = require("@prisma/client");
   const prisma = new PrismaClient();
   const cors = require("cors");
   const express = require("express");
 
+  const GITHUB_SIMILARITY_POINTS = 40;
+  const ADJACENT_PROFILE_SIMILARITY_POINTS = 30;
+  const RECOMMENDER_PROFILE_SIMILARITY_POINTS = 15;
+  const RECENCY_POINTS = 15;
+
   const SEED_RECENT_CONNECTIONS = 20; // Attempts to optimize time it takes to get connections while getting the most relevant recommendations.
 
   // Connections graph.
   let connectionsGraph = {};
+  await createGraph();
+
+  /***
+   * Creates the graph.
+   * Called upon starting the server.
+   */
+  async function createGraph() {
+    // Gets all users.
+    const users = await prisma.user.findMany();
+
+    // Creates graph by iterating through all users.
+    for (userIndex in users) {
+      // Gets the connections for the specified user.
+      const userID = users[userIndex].id;
+
+      const connections = await prisma.connection.findMany({
+        where: {
+          AND: [
+            { accepted: true },
+            {
+              OR: [{ senderID: userID }, { recipientID: userID }],
+            },
+          ],
+        },
+      });
+
+      // Builds an array of the user's connections' IDs.
+      const connectionsArray = [];
+
+      for (connectionIndex in connections) {
+        const connectedUserID =
+          connections[connectionIndex]["senderID"] === userID
+            ? connections[connectionIndex]["recipientID"]
+            : connections[connectionIndex]["senderID"];
+
+        connectionsArray.push(connectedUserID);
+      }
+
+      // Updates connections graph.
+      connectionsGraph = { ...connectionsGraph, [userID]: connectionsArray };
+    }
+  }
 
   // All tags.
   const tags = [];
 
   /***
-   * Calculates the Jaccard similarity between two sets by comparing arrays of IDs.
+   * Calculates the Jaccard similarity between two sets by comparing arrays of similar objects.
    * Both sets should be IDs of the same objects.
+   * Gets a score of 0 if there are no objects to compare.
    */
   function jaccardSetSimilarity(setOne, setTwo) {
     let intersectionCount = 0;
@@ -29,15 +79,19 @@ module.exports = function (app) {
       }
     }
 
-    return unionCount === 0 ? 0 : (intersectionCount / unionCount) * 100;
+    return unionCount === 0 ? 0 : intersectionCount / unionCount;
   }
 
   /***
    * Produces a score out of 100 giving how similar different two user profiles are, indicating if they should be recommended.
    */
-  async function getUserSimilarityScore(userOneID, userTwoID) {
+  async function getUserSimilarityScore(
+    userOneID,
+    userTwoID,
+    maxSimilarityPoints
+  ) {
     /***
-     * Gets the user data, post data, and upvoted posts of a user.
+     * Gets the user data, post data, and upvoted posts of a user for comparison.
      */
     async function getUserData(id) {
       const data = await prisma.user.findUnique({ where: { id: id } });
@@ -121,84 +175,13 @@ module.exports = function (app) {
     );
 
     const similarityScore =
-      (upvotedPostsSimilarity + connectionsSimilarity) / 2; // A score out of 100 where 0 is not recommended and 100 is highly recommended.
+      maxSimilarityPoints *
+      ((upvotedPostsSimilarity + connectionsSimilarity) / 2);
 
     return similarityScore;
   }
 
   // Endpoints.
-
-  /***
-   * Creates the graph.
-   * Called upon starting the server.
-   */
-  app.post("/create-graph", async (req, res) => {
-    // Gets all users.
-
-    const users = await prisma.user.findMany();
-
-    // Creates graph by iterating through all users.
-    for (user in users) {
-      // Gets the connections for the specified user.
-      const connections = await prisma.connection.findMany({
-        where: {
-          AND: [
-            { accepted: true },
-            {
-              OR: [
-                { senderID: Number(userID) },
-                { recipientID: Number(userID) },
-              ],
-            },
-          ],
-        },
-      });
-
-      // Builds an array of the user's connections' IDs.
-      const connectionsArray = [];
-
-      for (index in connections) {
-        const connectedUserID =
-          connections[index]["senderID"] === Number(userID)
-            ? connections[index]["recipientID"]
-            : connections[index]["senderID"];
-
-        connectionsArray.push(connectedUserID);
-      }
-
-      // Updates connections graph.
-      connectionsGraph[userID] = connectionsArray;
-    }
-  });
-
-  /***
-   * Gets a connection.
-   */
-  app.get("/connection/:userID/:connectionID", async (req, res) => {
-    const userID = req.params.userID;
-    const connectionID = req.params.connectionID;
-
-    const connection = await prisma.connection.findMany({
-      where: {
-        OR: [
-          {
-            AND: [
-              { recipientID: Number(userID) },
-              { senderID: Number(connectionID) },
-            ],
-          },
-          {
-            AND: [
-              { recipientID: Number(connectionID) },
-              { senderID: Number(userID) },
-            ],
-          },
-        ],
-      },
-    });
-
-    res.status(200).json(connection);
-  });
 
   /***
    * Gets all  of a user's connections' data given a userID.
@@ -245,6 +228,36 @@ module.exports = function (app) {
   });
 
   /***
+   * Gets a specific connection given two users.
+   * If connection does not exit, returns empty array.
+   */
+  app.get("/connection/:userID/:connectionID", async (req, res) => {
+    const userID = req.params.userID;
+    const connectionID = req.params.connectionID;
+
+    const connection = await prisma.connection.findMany({
+      where: {
+        OR: [
+          {
+            AND: [
+              { recipientID: Number(userID) },
+              { senderID: Number(connectionID) },
+            ],
+          },
+          {
+            AND: [
+              { recipientID: Number(connectionID) },
+              { senderID: Number(userID) },
+            ],
+          },
+        ],
+      },
+    });
+
+    res.status(200).json(connection);
+  });
+
+  /***
    * Updates the connections graph and database for the specified user.
    * Called when a connection with the specified user is accepted.
    */
@@ -270,7 +283,8 @@ module.exports = function (app) {
       },
     });
 
-    // Add connection to graph.
+    connectionsGraph[userID].push(Number(connectionID));
+    connectionsGraph[connectionID].push(Number(userID));
 
     res.status(200).json();
   });
@@ -321,7 +335,14 @@ module.exports = function (app) {
       },
     });
 
-    // Remove connection from graph.
+    connectionsGraph[userID].splice(
+      connectionsGraph[userID].indexOf(Number(connectionID)),
+      1
+    );
+    connectionsGraph[connectionID].splice(
+      connectionsGraph[connectionID].indexOf(Number(userID)),
+      1
+    );
 
     res.status(200).json();
   });
@@ -379,30 +400,7 @@ module.exports = function (app) {
       const userID = req.params.userID;
       const numberOfRecs = req.params.numberOfRecs;
 
-      // Gets the user's data.
-      const userData = await prisma.user.findUnique({
-        where: { id: Number(userID) },
-      });
-
-      // Gets the connections of a user in order (most recent first; i.e. by ID of connection).
-      const connections = await prisma.connection.findMany({
-        where: {
-          OR: [{ recipientID: Number(userID) }, { senderID: Number(userID) }],
-        },
-        orderBy: { id: "desc" },
-      });
-
-      // Builds an array of the user's connections' IDs.
-      const userConnectionsIDs = [];
-
-      for (index in connections) {
-        const connectedUser =
-          connections[index]["senderID"] === Number(userID)
-            ? connections[index]["recipientID"]
-            : connections[index]["senderID"];
-
-        userConnectionsIDs.push(connectedUser);
-      }
+      const userConnectionsIDs = connectionsGraph[userID];
 
       const recommendations = [];
 
@@ -415,44 +413,35 @@ module.exports = function (app) {
         SEED_RECENT_CONNECTIONS <= userConnectionsIDs.length
           ? SEED_RECENT_CONNECTIONS
           : userConnectionsIDs.length; // Determines how many recent connections we will be using for generating recommendations at any given time. Either the seed, or, if less than the seed, the length of the recommendations.
+      let recencyPoints = RECENCY_POINTS; // Points for how recent a connection is. Cut by half each time we need to expand the pool we are looking for.
       let count = 0; // Counts how many of the connections have been gone through.
 
       while (recommendations < numberOfRecs) {
         // Retrieves the sorted connections of the user's connection (refered to as adjacent connections).
-        const adjacentConnections = await prisma.connection.findMany({
-          where: {
-            AND: [
-              {
-                OR: [
-                  { recipientID: Number(userConnectionsIDs[count]) },
-                  { senderID: Number(userConnectionsIDs[count]) },
-                ],
-              },
-              {
-                NOT: [
-                  {
-                    OR: [
-                      { recipientID: Number(userID) },
-                      { senderID: Number(userID) },
-                    ],
-                  },
-                ],
-              },
-              { accepted: true },
-            ],
-          },
-          orderBy: { id: "desc" },
-        });
-
-        for (adjacentConnectionIdx in adjacentConnections) {
-          // Checks if adjacent connection is already connected with user.
-
-          const adjacentConnectionUserID =
-            adjacentConnections[adjacentConnectionIdx].senderID ===
+        // Excludes the recommendee user's in adjacent connections before proceeding.
+        let adjacentConnectionsIDs = connectionsGraph[
+          String(userConnectionsIDs[count])
+        ].toSpliced(
+          connectionsGraph[String(userConnectionsIDs[count])].indexOf(
             Number(userID)
-              ? adjacentConnections[adjacentConnectionIdx].recipientID
-              : adjacentConnections[adjacentConnectionIdx].senderID;
+          ),
+          1
+        );
 
+        const reversedAdjacentConnectionsIDs = [];
+        // Reverse the array to look at most recent connections first.
+        for (adjacentConnectionsIDsIndex in adjacentConnectionsIDs) {
+          reversedAdjacentConnectionsIDs.push(
+            adjacentConnectionsIDs[
+              adjacentConnectionsIDs.length - adjacentConnectionsIDsIndex - 1
+            ]
+          );
+        }
+
+        adjacentConnectionsIDs = reversedAdjacentConnectionsIDs;
+
+        for (adjacentConnectionsIDsIndex in adjacentConnectionsIDs) {
+          // Checks if adjacent connection is already connected with user.
           const connected = await prisma.connection.findMany({
             where: {
               OR: [
@@ -460,14 +449,16 @@ module.exports = function (app) {
                   AND: [
                     { recipientID: Number(userID) },
                     {
-                      senderID: adjacentConnectionUserID,
+                      senderID:
+                        adjacentConnectionsIDs[adjacentConnectionsIDsIndex],
                     },
                   ],
                 },
                 {
                   AND: [
                     {
-                      recipientID: adjacentConnectionUserID,
+                      recipientID:
+                        adjacentConnectionsIDs[adjacentConnectionsIDsIndex],
                     },
                     { senderID: Number(userID) },
                   ],
@@ -481,29 +472,53 @@ module.exports = function (app) {
             const connectedUserRecommendationScore =
               await getUserSimilarityScore(
                 Number(userID),
-                Number(userConnectionsIDs[count])
+                Number(userConnectionsIDs[count]),
+                RECOMMENDER_PROFILE_SIMILARITY_POINTS
               );
 
             const adjacentUserRecommendationScore =
               await getUserSimilarityScore(
                 Number(userID),
-                adjacentConnectionUserID
+                adjacentConnectionsIDs[adjacentConnectionsIDsIndex],
+                ADJACENT_PROFILE_SIMILARITY_POINTS
               );
 
             // Recommendation score takes into accout the similarity of between the adjacent user and user and between the connected user and user.
             const recommendationScore =
-              connectedUserRecommendationScore * (1 / 5) +
-              adjacentUserRecommendationScore * (4 / 5);
+              connectedUserRecommendationScore +
+              adjacentUserRecommendationScore +
+              recencyPoints;
 
             weightedRecommendations = {
               ...weightedRecommendations,
-              [adjacentConnectionUserID]: recommendationScore,
+              [adjacentConnectionsIDs[adjacentConnectionsIDsIndex]]:
+                recommendationScore,
             };
-            recommendations.push(Number(adjacentConnectionUserID));
           }
         }
 
+        // Gets the most highly relevant adjacent connections seen most frequently using the weighted connections values.
+        while (
+          recommendations.length < numberOfRecs &&
+          Object.keys(weightedRecommendations).length > 0
+        ) {
+          const highestRecommendationScore = Math.max(
+            Object.values(weightedRecommendations)
+          );
+          const hightestRecommendedUserID = Object.keys(
+            weightedRecommendations
+          ).find(
+            (recommenedUserID) =>
+              weightedRecommendations[recommenedUserID] ===
+              highestRecommendationScore
+          );
+
+          recommendations.push(Number(hightestRecommendedUserID));
+          delete weightedRecommendations[hightestRecommendedUserID];
+        }
+
         count += 1;
+        recencyPoints /= 2;
 
         // Widens the pool of recent connections to look through if algorithm hasn't yet found enough recommendations and there are more recommendations to look through.
         if (count < connectionsPoolSize) {
@@ -521,7 +536,6 @@ module.exports = function (app) {
           break;
         }
       }
-      // Gets the most adjacent connections seen most frequently using the weighted connections values.
 
       res.status(200).json(recommendations);
     }
