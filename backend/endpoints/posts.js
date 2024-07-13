@@ -15,7 +15,7 @@ module.exports = function (app) {
   const USER_POSTS = 2;
 
   /***
-   * Gets the user data from the database.
+   * Gets the user data from the database using the userHandle.
    * If not found, returns a status of 404.
    */
   app.get("/user/:userHandle", async (req, res) => {
@@ -24,6 +24,42 @@ module.exports = function (app) {
 
       const user = await prisma.user.findUnique({
         where: { userHandle: userHandle },
+      });
+
+      const posts = await prisma.post.findMany({
+        where: { authorID: user.id },
+      });
+
+      if (user) {
+        const userData = {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          githubHandle: user.githubHandle,
+          email: user.email,
+          userHandle: user.userHandle,
+          businessAccount: user.businessAccount,
+          profilePicture: user.profilePicture,
+          featuredProjects: user.featuredProjects,
+          posts: posts,
+        };
+
+        res.status(200).json(userData);
+      }
+    } catch (e) {
+      res.status(404).json();
+    }
+  });
+
+  /***
+   * Gets the user's data from the database using the userID.
+   */
+  app.get("/user/id/:userID", async (req, res) => {
+    try {
+      const userID = req.params.userID;
+
+      const user = await prisma.user.findUnique({
+        where: { id: Number(userID) },
       });
 
       const posts = await prisma.post.findMany({
@@ -161,6 +197,7 @@ module.exports = function (app) {
 
       // Get the ID of the other user in the connection.
       let connectionID = -1;
+
       if (connection.recipientID === Number(userID)) {
         connectionID = connection.senderID;
       } else {
@@ -174,9 +211,10 @@ module.exports = function (app) {
         take: USER_POSTS,
       });
 
-      // Append the most recent posts of that user to the array.
+
+      // Append the most recent posts of that user to the array if not empty.
       if (userPosts.length > 0) {
-        feedPosts.push(userPosts);
+        feedPosts = feedPosts.concat(userPosts);
       }
       connectionsIdx += 1;
     }
@@ -237,6 +275,9 @@ module.exports = function (app) {
     res.status(200).json();
   });
 
+  /***
+   * Creates a comment for a post.
+   */
   app.post("/comment", async (req, res) => {
     const { commentText, date, timestamp, parentCommentID, postID, authorID } =
       req.body;

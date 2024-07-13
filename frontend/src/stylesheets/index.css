@@ -1,6 +1,6 @@
 * {
   margin: 0;
-  font-family: Arial;
+  font-family: "Arial";
 }
 
 :root {
@@ -11,7 +11,7 @@
 }
 
 body {
-  background-color: var(--blue-grey);
+  background-color: var(--near-black);
   color: var(--off-white);
 }
 
@@ -23,6 +23,10 @@ body {
   align-items: center;
   justify-content: center;
   gap: 4%;
+}
+
+.page {
+  margin: 3%;
 }
 
 .input {

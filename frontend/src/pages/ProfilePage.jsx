@@ -1,10 +1,18 @@
 import { useCookies } from "react-cookie";
 import { getUserData, getUserPosts } from "./util/posts";
+import {
+  addConnection,
+  getConnectionStatus,
+  removeConnection,
+  requestConnection,
+} from "./util/connections";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Post from "../components/Post";
 import FeaturedProject from "../components/FeaturedProject";
 import LoadingPage from "./LoadingPage";
+
+import { CONNECT_STATUS } from "./util/enums";
 
 import "./stylesheets/ProfilePage.css";
 
@@ -14,32 +22,13 @@ const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 const profileURL = window.location.href.split("/");
 const profileUser = profileURL[profileURL.length - 1];
 
-// Helper asynchronous functions.
-
-/***
- * Helper function for asyncronously loading user data.
- */
-async function loadProfileUserData() {
-  const profileUserData = await getUserData(profileUser);
-  return profileUserData;
-}
-
-/***
- * Helper function for asyncronously loading user posts.
- */
-async function loadUserPosts(userID) {
-  const userPosts = await getUserPosts(userID);
-  return userPosts;
-}
-
 function ProfilePage() {
   const [cookies, setCookies, removeCookies] = useCookies(["user"]);
   const [profileUserData, setProfileUserData] = useState({});
   const [userPosts, setUserPosts] = useState([]);
   const [featuredProjects, setFeaturedProjects] = useState([]);
+  const [connectionStatus, setConnectionStatus] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const navigate = useNavigate();
 
   /***
    * Retrieves the profile picture from the database information.
@@ -62,6 +51,58 @@ function ProfilePage() {
   }
 
   /***
+   * Handle changes to connections.
+   */
+  function handleConnection(connectionFunction) {
+    connectionFunction(cookies.user.id, profileUserData.id);
+    setConnectionStatus();
+  }
+
+  /***
+   * Gets the connection button if depending on if the users are connected or the connection is pending.
+   */
+  function getConnectButton() {
+    switch (connectionStatus) {
+      case CONNECT_STATUS.CONNECTED:
+        return (
+          <button onClick={() => handleConnection(removeConnection)}>
+            Connected
+          </button>
+        );
+
+      case CONNECT_STATUS.REQUESTED:
+        return (
+          <button onClick={() => handleConnection(removeConnection)}>
+            Pending
+          </button>
+        );
+
+      case CONNECT_STATUS.RESPOND:
+        return (
+          <div>
+            <button onClick={() => handleConnection(addConnection)}>
+              Accept
+            </button>
+            <button onClick={() => handleConnection(removeConnection)}>
+              Ignore
+            </button>
+          </div>
+        );
+
+      case CONNECT_STATUS.NOT_CONNECTED:
+        return (
+          <button onClick={() => handleConnection(requestConnection)}>
+            Connect
+          </button>
+        );
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  /***
    *  Returns profile information based on if the user is viewing their own profile or the profile of another user.
    */
   function profileInfo() {
@@ -74,7 +115,7 @@ function ProfilePage() {
     } else {
       return (
         <>
-          <div> </div>
+          <div>{getConnectButton()}</div>
         </>
       );
     }
@@ -83,19 +124,26 @@ function ProfilePage() {
   // Retrieve data upon page reload & cookies change.
   useEffect(() => {
     async function loadData() {
-      const profileUserData = await loadProfileUserData(cookies.user);
-      await setProfileUserData(profileUserData);
+      const loadedProfileUserData = await getUserData(profileUser);
+      await setProfileUserData(loadedProfileUserData);
 
-      await setFeaturedProjects(profileUserData.featuredProjects);
-      const userPosts = await loadUserPosts(profileUserData.id);
+      await setFeaturedProjects(loadedProfileUserData.featuredProjects);
 
+      const userPosts = await getUserPosts(loadedProfileUserData.id);
       await setUserPosts(userPosts);
+
+      const loadedConnectionStatus = await getConnectionStatus(
+        cookies.user.id,
+        loadedProfileUserData.id
+      );
+
+      await setConnectionStatus(loadedConnectionStatus);
     }
 
     loadData();
 
     setIsLoading(setIsLoading(false));
-  }, [cookies]);
+  }, [cookies, connectionStatus]);
 
   if (isLoading) {
     return <LoadingPage />;
