@@ -18,6 +18,7 @@ model User {
   email               String        @unique
   userHandle          String        @unique
   githubHandle        String        @unique
+  githubAccessToken   String        @default("")
   encryptedPassword   String
   firstName           String
   lastName            String
@@ -54,13 +55,17 @@ model Post {
   timestamp           String
   text                String
   upvoteCount         Int           @default(0)
+  isRepost            Boolean       @default(false)
+
+  repostedSourceID    Int?
+  repsotedSource      Post?         @relation(fields: [repostedSourceID], references: [id], name: "reposts")
 
   authorID            Int
   author              User          @relation(fields: [authorID], references: [id], onDelete: Cascade, name: "post author")
 
   upvotes             Upvote[]
-
   comments            Comment[]
+  reposters           Post[]        @relation(name: "reposts")
 }
 
 model Upvote {
