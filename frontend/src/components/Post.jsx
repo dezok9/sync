@@ -1,11 +1,13 @@
 import { useCookies } from "react-cookie";
 import { upvotePost } from "../pages/util/posts";
 import { useNavigate } from "react-router-dom";
-import "./stylesheets/Post.css";
+import { USER } from "../pages/util/enums";
 import { useState } from "react";
 
+import "./stylesheets/Post.css";
+
 function Post(postInfo) {
-  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [upvotes, setUpvotes] = useState(postInfo.postInfo.upvoteCount);
 
   const navigate = useNavigate();

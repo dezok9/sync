@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { createComment, generateDateTimestamp } from "../pages/util/posts";
+import { useCookies } from "react-cookie";
+import { USER } from "./../pages/util/enums";
 
 import "./stylesheets/CommentFamily.css";
-import { useCookies } from "react-cookie";
 
 function CommentFamily(commentFamily) {
-  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [parentReplyOpen, setParentReplyOpen] = useState(false);
   const [parentReplyText, setParentReplyText] = useState("");
 

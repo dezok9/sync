@@ -7,18 +7,13 @@ import {
   createPost,
   generateDateTimestamp,
 } from "./util/posts";
+import { USER, TITLE, TEXT, MEDIA, TAGS } from "./util/enums";
 import Post from "../components/Post";
 import LoadingPage from "./LoadingPage";
 
 import "./stylesheets/HomePage.css";
 
 function HomePage() {
-  // Enums for post and feed data.
-  const TITLE = "title";
-  const TEXT = "text";
-  const MEDIA = "media";
-  const TAGS = "tags";
-
   // Modal useStates.
   const [modalOpen, setModalOpen] = useState(false);
   const [postContent, setPostContent] = useState({
@@ -30,7 +25,7 @@ function HomePage() {
   const [titleInvalidWarning, setTitleInvalidWarning] = useState(false);
   const [textInvalidWarning, setTextInvalidWarning] = useState(false);
 
-  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState({});
   const [feedData, setFeedData] = useState([]);
@@ -41,7 +36,7 @@ function HomePage() {
    * Helper function for logging out.
    */
   function logOut() {
-    removeCookies("user", { path: "/" });
+    removeCookies(USER, { path: "/" });
     navigate("/login");
   }
 

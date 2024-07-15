@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import Post from "../components/Post";
 import FeaturedProject from "../components/FeaturedProject";
 import LoadingPage from "./LoadingPage";
-
+import { USER } from "./util/enums";
 import { CONNECT_STATUS } from "./util/enums";
 
 import "./stylesheets/ProfilePage.css";
@@ -23,7 +23,7 @@ const profileURL = window.location.href.split("/");
 const profileUser = profileURL[profileURL.length - 1];
 
 function ProfilePage() {
-  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [profileUserData, setProfileUserData] = useState({});
   const [userPosts, setUserPosts] = useState([]);
   const [featuredProjects, setFeaturedProjects] = useState([]);

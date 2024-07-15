@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleSignUp, getGithubIdentity } from "./util/auth";
-import { Octokit } from "@octokit/rest";
 
 import "./stylesheets/SignUpPage.css";
 

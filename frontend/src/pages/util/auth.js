@@ -88,6 +88,11 @@ export async function handleSignUp(loginInfo) {
         }),
       });
 
+      const response = await fetch(`${DATABASE}/user/${userHandle}`);
+      const userData = await response.json();
+
+      localStorage.setItem("userID", userData.id);
+
       return userCreation.ok;
     } catch (err) {}
   } else {
@@ -149,9 +154,11 @@ export async function githubAuthentication() {
   const clientID = GITHUB_CLIENT_ID;
   const clientSecret = GITHUB_CLIENT_SECRET;
 
+  const userID = localStorage.getItem("userID");
+
   if (code && state) {
     if (state === localStorage.getItem("CSRFToken")) {
-      const response = await fetch(`${DATABASE}/token-auth`, {
+      await fetch(`${DATABASE}/token-auth/${userID}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -162,24 +169,11 @@ export async function githubAuthentication() {
           code: code,
         }),
       });
-
-      const token = await response.json();
-
-      if (token.access_token) {
-        // Successful request and retrieval of token.
-        // Store in database.
-      } else {
-        // Invalid or already fuffilled request for access token.
-        if (localStorage.getItem("gitHubAuthToken")) {
-          // Already fuffilled.
-        } else {
-          // Invalid request.
-        }
-      }
     } else {
       // Authentication failed.
     }
 
+    localStorage.removeItem("userID");
     window.location.assign(`${WEB_ADDRESS}/login`);
   } else {
     // Codes don't match.
