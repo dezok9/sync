@@ -1,3 +1,5 @@
+import { MONTHS } from "./enums";
+
 const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 
@@ -155,21 +157,6 @@ export async function getComments(postID) {
  */
 export function generateDateTimestamp() {
   // Generate date and timestamp.
-  const MONTHS = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
   const dateObject = new Date();
 
   const month = dateObject.getMonth();

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { getPost, generateDateTimestamp, createComment } from "./util/posts";
+import { USER } from "./util/enums";
 
 import "./stylesheets/PostPage.css";
 import LoadingPage from "./LoadingPage";
@@ -12,7 +13,7 @@ const postID = postURL[postURL.length - 1];
 
 function Post() {
   const [isLoading, setIsLoading] = useState(true);
-  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [postData, setPostData] = useState({});
   const [commentData, setCommentData] = useState([]);
   const [postAuthorData, setPostAuthorData] = useState([]);

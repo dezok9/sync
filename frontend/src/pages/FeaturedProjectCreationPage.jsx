@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import {
-  getAllDeployments,
-  getGitHubRepositories,
-} from "./util/featuredProjects";
+import { getAllDeployments, getGitHubRepositories } from "./util/github";
+import { USER } from "./util/enums";
+
 import LoadingPage from "./LoadingPage";
 import FeaturedPostOption from "../components/FeaturedPostOption";
 
 function FeaturedPostCreationPage() {
-  const [cookies] = useCookies(["user"]);
+  const [cookies] = useCookies([USER]);
   const [isLoading, setIsLoading] = useState(true);
   const [githubRepositories, setGitHubRepositories] = useState([]);
   const [deployedGitHubRepos, setDeployedGitHubRepos] = useState({}); //Deployed repository with the key being the GitHub URL and value being an array of the deployed repositories.
@@ -18,15 +17,17 @@ function FeaturedPostCreationPage() {
       const loadedGitHubRepositories = await getGitHubRepositories(
         cookies.user.githubHandle
       );
-      setGitHubRepositories(loadedGitHubRepositories);
+      await setGitHubRepositories(loadedGitHubRepositories);
 
       for (const repositoryIndex in loadedGitHubRepositories) {
         const repositoryName = loadedGitHubRepositories[repositoryIndex].name;
+
         const loadedDeployments = await getAllDeployments(
           cookies.user.githubHandle,
           repositoryName
         );
-        setDeployedGitHubRepos((previousDeployedGitHubRepos) => ({
+
+        await setDeployedGitHubRepos((previousDeployedGitHubRepos) => ({
           ...previousDeployedGitHubRepos,
           [repositoryName]: loadedDeployments,
         }));

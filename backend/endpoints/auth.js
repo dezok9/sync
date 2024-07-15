@@ -1,6 +1,6 @@
 // Endpoints for login and authentication.
 
-module.exports = function (app) {
+module.exports = function (app, createOctokit, connectionsGraph) {
   const { PrismaClient } = require("@prisma/client");
   const prisma = new PrismaClient();
   const cors = require("cors");
@@ -93,6 +93,12 @@ module.exports = function (app) {
           },
         });
 
+        const userData = await prisma.user.findUnique({
+          where: { userHandle: userHandle },
+        });
+
+        connectionsGraph = { ...connectionsGraph, [userData.id]: [] };
+
         res.status(201).json();
       } catch (err) {
         res.status(500).json({ "error:": err.message });
@@ -101,13 +107,14 @@ module.exports = function (app) {
   });
 
   /***
-   * Gets the user's GitHub authentication token and returns it.
+   * Gets the user's GitHub authentication token and stores it in the database.
    */
-  app.post("/token-auth", async (req, res) => {
+  app.post("/token-auth/:userID", async (req, res) => {
     const GITHUB_ACCESS_TOKEN_URL =
       "https://github.com/login/oauth/access_token";
 
     const { clientID, clientSecret, code } = req.body;
+    const userID = req.params.userID;
 
     const accessTokenParams = new URLSearchParams({
       client_id: clientID,
@@ -124,19 +131,27 @@ module.exports = function (app) {
       },
     });
 
-    const token = await response.json();
+    const tokenInfo = await response.json();
 
-    if (token.access_token) {
-      // If successful, hash and store token.
-      res.status(200).json(token);
+    if (tokenInfo.access_token) {
+      // If successful, store token.
+      await prisma.user.update({
+        where: { id: Number(userID) },
+        data: { githubAccessToken: tokenInfo.access_token },
+      });
+      res.status(200).json();
     } else {
-      // Invalid or already fuffilled request for access token.
-      if (true) {
+      // Check if invalid or if request is already fuffilled request for access token.
+      const userData = await prisma.user.findUnique({
+        where: { id: Number(userID) },
+      });
+
+      if (userData.githubAccessToken) {
         // Already fuffilled.
-        // Fetch access code from database and return.
         res.status(200).json();
       } else {
         // Invalid request.
+        res.status(502).json();
       }
     }
   });

@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleLogin } from "./util/auth";
 import { useCookies } from "react-cookie";
+import { USER } from "./util/enums";
 
 import "./stylesheets/LoginPage.css";
 
 function LoginPage() {
-  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
 
@@ -35,7 +36,7 @@ function LoginPage() {
         const userData = loginData[1];
 
         if (validLogin) {
-          setCookies("user", userData, { path: "/", maxAge: 3600 });
+          setCookies(USER, userData, { path: "/", maxAge: 3600 });
           navigate("/");
         }
       } else {

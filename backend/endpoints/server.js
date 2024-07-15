@@ -1,3 +1,7 @@
+const { PrismaClient } = require("@prisma/client");
+const { Octokit, App } = require("@octokit/rest");
+
+const prisma = new PrismaClient();
 const cors = require("cors");
 const express = require("express");
 const expressValidator = require("express-validator");
@@ -8,9 +12,32 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const auth = require("./auth")(app);
+// Unviersal functions and variables used by other endpoint files.
+
+// Connections graph.
+let connectionsGraph = {};
+
+/***
+ * Function for creating an octokit instance after retrieving the accessToken for a user.
+ */
+async function createOctokit(githubHandle) {
+  const user = await prisma.user.findUnique({
+    where: { githubHandle: githubHandle },
+  });
+
+  const octokit = new Octokit({ auth: user.githubAccessToken });
+
+  return octokit;
+}
+
+const auth = require("./auth")(app, createOctokit, connectionsGraph);
+const github = require("./github")(app, createOctokit);
 const posts = require("./posts")(app);
 const featuredProjects = require("./featuredProjects")(app);
-const connections = require("./connections")(app);
+const connections = require("./connections")(
+  app,
+  createOctokit,
+  connectionsGraph
+);
 
 app.listen(PORT, () => {});

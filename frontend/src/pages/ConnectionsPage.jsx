@@ -1,6 +1,7 @@
 import { useCookies } from "react-cookie";
 import { getConnections, getRecommendedUsers } from "./util/connections";
 import { useState, useEffect } from "react";
+import { USER } from "./util/enums";
 
 import LoadingPage from "./LoadingPage";
 import Connection from "../components/Connection";
@@ -8,7 +9,7 @@ import Connection from "../components/Connection";
 const NUMBER_OF_RECOMMENDATIONS = 5;
 
 function ConnectionsPage() {
-  const [cookies] = useCookies(["user"]);
+  const [cookies] = useCookies([USER]);
   const [userConnectionsData, setUserConnectionsData] = useState([]);
   const [recommendedUsersData, setRecommendedUsersData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

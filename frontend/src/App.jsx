@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { Suspense, lazy, useState } from "react";
+import { USER } from "./pages/util/enums";
 import LoadingPage from "./pages/LoadingPage";
 import Page404 from "./pages/Page404";
 
@@ -34,12 +35,11 @@ const FeaturedProjectCreationPage = lazy(() =>
   import("./pages/FeaturedProjectCreationPage")
 );
 
-
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 function App() {
-  const [cookies, setCookies, removeCookies] = useCookies(["user"]);
+  const [cookies, setCookies, removeCookies] = useCookies([USER]);
 
   // For routes requiring that the user is logged in.
   const PrivateRoutes = () => {
@@ -81,6 +81,7 @@ function App() {
                   path="/create-featured"
                   element={<FeaturedProjectCreationPage />}
                 />
+                <Route
                   path="/connections/pending"
                   element={<PendingConnectionsPage />}
                 />
