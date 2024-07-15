@@ -157,18 +157,37 @@ function ProfilePage() {
               <h1>
                 {profileUserData.firstName + " " + profileUserData.lastName}
               </h1>
-              <h2>@{profileUser}</h2>
+              <h2 className="user-handle">@{profileUser}</h2>
+              <a
+                href={`https://www.github.com/${profileUserData.githubHandle}`}
+              >
+                <section className="profile-link">
+                  {" "}
+                  <i className="fa-brands fa-github"></i> GitHub
+                </section>
+              </a>
+              <section className="profile-link">
+                <i className="fa-brands fa-linkedin"></i> LinkedIn
+              </section>
               {profileInfo()}
-              {featuredProjects.map((featuredProjectInfo) => (
-                <FeaturedProject
-                  key={featuredProjectInfo.id}
-                  featuredProjectInfo={featuredProjectInfo}
-                />
-              ))}
-              <div className="posts">
-                {userPosts.map((postInfo) => (
-                  <Post key={postInfo.id} postInfo={postInfo} />
-                ))}
+              <div>
+                <h2>Featured Projects</h2>
+                <div>
+                  {featuredProjects.map((featuredProjectInfo) => (
+                    <FeaturedProject
+                      key={featuredProjectInfo.id}
+                      featuredProjectInfo={featuredProjectInfo}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h2>Posts</h2>
+                <div className="posts">
+                  {userPosts.map((postInfo) => (
+                    <Post key={postInfo.id} postInfo={postInfo} />
+                  ))}
+                </div>
               </div>
             </div>
           </section>

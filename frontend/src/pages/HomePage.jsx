@@ -33,14 +33,6 @@ function HomePage() {
   const navigate = useNavigate();
 
   /***
-   * Helper function for logging out.
-   */
-  function logOut() {
-    removeCookies(USER, { path: "/" });
-    navigate("/login");
-  }
-
-  /***
    * Toggles the modal view on click.
    */
   function handleModalView() {
@@ -122,19 +114,17 @@ function HomePage() {
   } else {
     return (
       <>
-        <button onClick={() => navigate(`/profile/${cookies.user.userHandle}`)}>
-          Profile
-        </button>
-        <div className="home-page">
-          <h1>Home</h1>
-          <h3>{`Welcome, ${userData.firstName}`}</h3>
-          <button onClick={() => logOut()}>Log Out</button>
-          <button onClick={handleModalView}>Create Post</button>
-          <section className="feed">
-            {feedData.map((postData) => (
-              <Post key={postData.id} postInfo={postData} />
-            ))}
-          </section>
+        <div className="home">
+          <div className="home-page page">
+            <h1>Home</h1>
+            <h3>{`Welcome, ${userData.firstName}`}</h3>
+            <button onClick={handleModalView}>Create Post</button>
+            <section className="feed">
+              {feedData.map((postData) => (
+                <Post key={postData.id} postInfo={postData} />
+              ))}
+            </section>
+          </div>
 
           <div className={"modal " + (modalOpen ? "show" : "hide")}>
             <div>
