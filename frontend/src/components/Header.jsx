@@ -49,7 +49,7 @@ function Header() {
           <input className="search-field"></input>
         </div>
         <section className="logout nav-bar-link" onClick={() => logOut()}>
-          <i class="fa-solid fa-door-open fa-xl"></i> Logout
+          <i className="fa-solid fa-door-open fa-xl"></i> Logout
         </section>
       </header>
     );

@@ -1,7 +1,9 @@
 .connection {
   display: flex;
-  border: 2px solid white;
-  background-color: blue;
+  background-color: rgba(255, 255, 255, 0.3);
+  gap: 1%;
+  padding: 1% 2%;
+  border-radius: 10px;
 }
 .connection:hover {
   cursor: pointer;
