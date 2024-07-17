@@ -693,9 +693,9 @@ module.exports = async function (app, createOctokit, connectionsGraph) {
             recommendations.length < numberOfRecs &&
             Object.keys(weightedRecommendations).length > 0
           ) {
-            const highestRecommendationScore = Math.max(
-              Object.values(weightedRecommendations)
-            );
+            const highestRecommendationScore = Object.values(
+              weightedRecommendations
+            ).reduce((val1, val2) => Math.max(val1, val2), -Infinity);
             const hightestRecommendedUserID = Object.keys(
               weightedRecommendations
             ).find(

@@ -1,7 +1,7 @@
 // Endpoints for retrieval of user data.
 // Exported to server.js.
 
-module.exports = function (app) {
+module.exports = function (app, connectionsGraph) {
   const { PrismaClient } = require("@prisma/client");
   const prisma = new PrismaClient();
   const cors = require("cors");
@@ -13,6 +13,37 @@ module.exports = function (app) {
 
   // Determines how many posts should be taken from each user.
   const USER_POSTS = 2;
+
+  /***
+   * Plots the point values of all posts.
+   * Runs once--upon starting the server.
+   */
+  async function plotPosts() {
+    let allPosts = await prisma.post.findMany();
+
+    for (const postIndex in allPosts) {
+      const comments = await prisma.comment.findMany({
+        where: { postID: allPosts[postIndex].id },
+      });
+
+      const resharesCount = await prisma.post.count({
+        where: { repostedSourceID: allPosts[postIndex].id },
+      });
+
+      const upvoteInfo = await prisma.upvote.findMany({
+        where: { userUpvoteID: allPosts[postIndex].id },
+      });
+
+      allPosts[postIndex] = {
+        ...allPosts[postIndex],
+        comments: comments,
+        resharesCount: resharesCount,
+        upvoteInfo: upvoteInfo,
+      };
+    }
+  }
+
+  plotPosts();
 
   /***
    * Gets the user data from the database using the userHandle.
@@ -211,11 +242,8 @@ module.exports = function (app) {
         take: USER_POSTS,
       });
 
-
-      // Append the most recent posts of that user to the array if not empty.
-      if (userPosts.length > 0) {
-        feedPosts = feedPosts.concat(userPosts);
-      }
+      // Append the most recent posts of that user to the array.
+      feedPosts = feedPosts.concat(userPosts);
       connectionsIdx += 1;
     }
 
@@ -295,4 +323,12 @@ module.exports = function (app) {
 
     res.status(200).json();
   });
+
+  /***
+   * Gets post recommendations for a user.
+   */
+  app.get(
+    "/posts/recommendations/:userID/:numberOfRecs",
+    async (req, res) => {}
+  );
 };

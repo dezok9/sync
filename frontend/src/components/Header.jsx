@@ -13,7 +13,7 @@ function Header() {
    */
   function logOut() {
     removeCookies(USER, { path: "/" });
-    navigate("/login");
+    window.location.assign(`${WEB_ADDRESS}/login`);
   }
 
   if (cookies[USER]) {

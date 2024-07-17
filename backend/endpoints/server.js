@@ -32,12 +32,12 @@ async function createOctokit(githubHandle) {
 
 const auth = require("./auth")(app, createOctokit, connectionsGraph);
 const github = require("./github")(app, createOctokit);
-const posts = require("./posts")(app);
 const featuredProjects = require("./featuredProjects")(app);
 const connections = require("./connections")(
   app,
   createOctokit,
   connectionsGraph
 );
+const posts = require("./posts")(app, connectionsGraph);
 
 app.listen(PORT, () => {});
