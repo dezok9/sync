@@ -103,6 +103,84 @@ module.exports = async function (app, createOctokit, connectionsGraph) {
   }
 
   /***
+   * Gets GitHub information, including repository information.
+   */
+  async function getGitHubInfo(githubHandle, octokit) {
+    const repositoryResponse = await octokit.request(
+      "GET /users/{owner}/repos",
+      {
+        sort: "pushed",
+        owner: githubHandle,
+      }
+    );
+    const repositories = repositoryResponse.data;
+
+    let languages = {}; // Cumulative language makeup of recent repositories.
+    const topics = [];
+    let repositoriesIndex = 0;
+
+    // Looks at the 5 most recent repositories for analysis of languages and topics.
+    while (
+      repositoriesIndex < repositories.length &&
+      repositoriesIndex < ANALYZE_REPOS
+    ) {
+      // Getting and looking through data on repository languages.
+      const responseRepositoryLanguages = await octokit.request(
+        "GET /repos/{owner}/{repo}/languages",
+        {
+          owner: githubHandle,
+          repo: repositories[repositoriesIndex].name,
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        }
+      );
+
+      const repositoryLanguages = responseRepositoryLanguages.data;
+
+      const repositoryLanguagesNames = Object.keys(repositoryLanguages);
+
+      for (let languagesNameIndex in repositoryLanguagesNames) {
+        if (
+          repositoryLanguagesNames[languagesNameIndex] in Object.keys(languages)
+        ) {
+          languages = {
+            ...lanaguages,
+            [repositoryLanguagesNames[languagesNameIndex]]:
+              languages[repositoryLanguagesNames[languagesNameIndex]] +
+              repositoryLanguages[repositoryLanguagesNames[languagesNameIndex]],
+          };
+        } else {
+          languages = {
+            ...languages,
+            [repositoryLanguagesNames[languagesNameIndex]]:
+              repositoryLanguages[repositoryLanguagesNames[languagesNameIndex]],
+          };
+        }
+      }
+
+      // Getting data on topics.
+      for (topicsIndex in repositories[repositoriesIndex].topics) {
+        if (
+          !topics.includes(repositories[repositoriesIndex].topics[topicsIndex])
+        ) {
+          topics.push(repositories[repositoriesIndex].topics[topicsIndex]);
+        }
+      }
+
+      repositoriesIndex += 1;
+    }
+
+    const githubInfo = {
+      repositories: repositories,
+      recentRepositoryLanguages: languages,
+      recentTopics: topics,
+    };
+
+    return githubInfo;
+  }
+
+  /***
    * Compares the similarities of the GitHubs of two users.
    * Considers and weighs factors such as code breakdown of repositories, tags of repositories, etc.
    * Uses the octokit of the user who the recommendation is being used for.
@@ -112,94 +190,8 @@ module.exports = async function (app, createOctokit, connectionsGraph) {
     userTwoGitHubHandle,
     octokit
   ) {
-    /***
-     * Gets GitHub information, including repository information.
-     */
-    async function getGitHubInfo(githubHandle) {
-      const repositoryResponse = await octokit.request(
-        "GET /users/{owner}/repos",
-        {
-          sort: "pushed",
-          owner: githubHandle,
-        }
-      );
-      const repositories = repositoryResponse.data;
-
-      let languages = {}; // Cumulative language makeup of recent repositories.
-      const topics = [];
-      let repositoriesIndex = 0;
-
-      // Looks at the 5 most recent repositories for analysis of languages and topics.
-
-      while (
-        repositoriesIndex < repositories.length &&
-        repositoriesIndex < ANALYZE_REPOS
-      ) {
-        // Getting and looking through data on repository languages.
-        const responseRepositoryLanguages = await octokit.request(
-          "GET /repos/{owner}/{repo}/languages",
-          {
-            owner: githubHandle,
-            repo: repositories[repositoriesIndex].name,
-            headers: {
-              "X-GitHub-Api-Version": "2022-11-28",
-            },
-          }
-        );
-
-        const repositoryLanguages = responseRepositoryLanguages.data;
-
-        const repositoryLanguagesNames = Object.keys(repositoryLanguages);
-
-        for (let languagesNameIndex in repositoryLanguagesNames) {
-          if (
-            repositoryLanguagesNames[languagesNameIndex] in
-            Object.keys(languages)
-          ) {
-            languages = {
-              ...lanaguages,
-              [repositoryLanguagesNames[languagesNameIndex]]:
-                languages[repositoryLanguagesNames[languagesNameIndex]] +
-                repositoryLanguages[
-                  repositoryLanguagesNames[languagesNameIndex]
-                ],
-            };
-          } else {
-            languages = {
-              ...languages,
-              [repositoryLanguagesNames[languagesNameIndex]]:
-                repositoryLanguages[
-                  repositoryLanguagesNames[languagesNameIndex]
-                ],
-            };
-          }
-        }
-
-        // Getting data on topics.
-        for (topicsIndex in repositories[repositoriesIndex].topics) {
-          if (
-            !topics.includes(
-              repositories[repositoriesIndex].topics[topicsIndex]
-            )
-          ) {
-            topics.push(repositories[repositoriesIndex].topics[topicsIndex]);
-          }
-        }
-
-        repositoriesIndex += 1;
-      }
-
-      const githubInfo = {
-        repositories: repositories,
-        recentRepositoryLanguages: languages,
-        recentTopics: topics,
-      };
-
-      return githubInfo;
-    }
-
-    const userOneGitHubInfo = await getGitHubInfo(userOneGitHubHandle);
-    const userTwoGitHubInfo = await getGitHubInfo(userTwoGitHubHandle);
+    const userOneGitHubInfo = await getGitHubInfo(userOneGitHubHandle, octokit);
+    const userTwoGitHubInfo = await getGitHubInfo(userTwoGitHubHandle, octokit);
 
     // Calculating topic overlap.
     // Topic similalrity can account for, max, two-fifths of GitHub similarity points.
@@ -249,6 +241,76 @@ module.exports = async function (app, createOctokit, connectionsGraph) {
   }
 
   /***
+   * Gets the user data, post data, and upvoted posts of a user for comparison.
+   */
+  async function getUserData(id) {
+    const data = await prisma.user.findUnique({ where: { id: id } });
+    const posts = await prisma.post.findMany({ where: { authorID: id } });
+    const upvotes = await prisma.upvote.findMany({
+      where: { userUpvoteID: id },
+    });
+    const connectionsData = await prisma.connection.findMany({
+      where: {
+        OR: [{ recipientID: id }, { senderID: id }],
+      },
+    });
+
+    let upvotedPosts = [];
+    let upvotedPostsIDs = [];
+
+    for (upvotesIndex in upvotes) {
+      const postData = await prisma.post.findUnique({
+        where: { id: upvotes[upvotesIndex].postID },
+      });
+      upvotedPosts = upvotedPosts.concat(postData);
+      upvotedPostsIDs = upvotedPostsIDs.concat(postData.id);
+    }
+
+    let connectedUsersIDs = [];
+
+    for (connectionsDataIndex in connectionsData) {
+      connectedUsersIDs = connectedUsersIDs.concat(
+        connectionsData[connectionsDataIndex].senderID === id
+          ? connectionsData[connectionsDataIndex].recipientID
+          : connectionsData[connectionsDataIndex].senderID
+      );
+    }
+
+    let tagFrequencies = {};
+    let tagCount = 0;
+
+    for (postsIndex in posts) {
+      for (tagIndex in posts[postsIndex].tags) {
+        const tag = posts[postsIndex].tags[tagIndex];
+        if (Object.keys(tagFrequencies).includes(tag)) {
+          tagFrequencies = {
+            ...tagFrequencies,
+            tag: tagFrequencies[tag] + 1,
+          };
+        } else {
+          tagFrequencies = { ...tagFrequencies, tag: 1 };
+        }
+        tagCount += 1;
+      }
+    }
+
+    for (const [tag, frequency] of Object.entries(tagFrequencies)) {
+      tagFrequencies = { ...tagFrequencies, tag: frequency / tagCount };
+    }
+
+    const allUserData = {
+      ...data,
+      posts: posts,
+      upvotedPosts: upvotedPosts,
+      upvotedPostsIDs: upvotedPostsIDs,
+      tagFrequencies: tagFrequencies,
+      connectedUsersIDs: connectedUsersIDs,
+    };
+
+    return allUserData;
+  }
+
+  /***
    * Produces a score out of 100 giving how similar different two user profiles are, indicating if they should be recommended.
    */
   async function getSyncProfileSimilarityScore(
@@ -257,76 +319,6 @@ module.exports = async function (app, createOctokit, connectionsGraph) {
     octokit,
     maxSimilarityPoints
   ) {
-    /***
-     * Gets the user data, post data, and upvoted posts of a user for comparison.
-     */
-    async function getUserData(id) {
-      const data = await prisma.user.findUnique({ where: { id: id } });
-      const posts = await prisma.post.findMany({ where: { authorID: id } });
-      const upvotes = await prisma.upvote.findMany({
-        where: { userUpvoteID: id },
-      });
-      const connectionsData = await prisma.connection.findMany({
-        where: {
-          OR: [{ recipientID: id }, { senderID: id }],
-        },
-      });
-
-      let upvotedPosts = [];
-      let upvotedPostsIDs = [];
-
-      for (upvotesIndex in upvotes) {
-        const postData = await prisma.post.findUnique({
-          where: { id: upvotes[upvotesIndex].postID },
-        });
-        upvotedPosts = upvotedPosts.concat(postData);
-        upvotedPostsIDs = upvotedPostsIDs.concat(postData.id);
-      }
-
-      let connectedUsersIDs = [];
-
-      for (connectionsDataIndex in connectionsData) {
-        connectedUsersIDs = connectedUsersIDs.concat(
-          connectionsData[connectionsDataIndex].senderID === id
-            ? connectionsData[connectionsDataIndex].recipientID
-            : connectionsData[connectionsDataIndex].senderID
-        );
-      }
-
-      let tagFrequencies = {};
-      let tagCount = 0;
-
-      for (postsIndex in posts) {
-        for (tagIndex in posts[postsIndex].tags) {
-          const tag = posts[postsIndex].tags[tagIndex];
-          if (Object.keys(tagFrequencies).includes(tag)) {
-            tagFrequencies = {
-              ...tagFrequencies,
-              tag: tagFrequencies[tag] + 1,
-            };
-          } else {
-            tagFrequencies = { ...tagFrequencies, tag: 1 };
-          }
-          tagCount += 1;
-        }
-      }
-
-      for (const [tag, frequency] of Object.entries(tagFrequencies)) {
-        tagFrequencies = { ...tagFrequencies, tag: frequency / tagCount };
-      }
-
-      const allUserData = {
-        ...data,
-        posts: posts,
-        upvotedPosts: upvotedPosts,
-        upvotedPostsIDs: upvotedPostsIDs,
-        tagFrequencies: tagFrequencies,
-        connectedUsersIDs: connectedUsersIDs,
-      };
-
-      return allUserData;
-    }
-
     const userOneData = await getUserData(userOneID);
     const userTwoData = await getUserData(userTwoID);
 
@@ -693,9 +685,9 @@ module.exports = async function (app, createOctokit, connectionsGraph) {
             recommendations.length < numberOfRecs &&
             Object.keys(weightedRecommendations).length > 0
           ) {
-            const highestRecommendationScore = Math.max(
-              Object.values(weightedRecommendations)
-            );
+            const highestRecommendationScore = Object.values(
+              weightedRecommendations
+            ).reduce((val1, val2) => Math.max(val1, val2), -Infinity);
             const hightestRecommendedUserID = Object.keys(
               weightedRecommendations
             ).find(
