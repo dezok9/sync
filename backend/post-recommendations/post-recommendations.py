@@ -3,18 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-LONG_POST_UPPER_LIMIT = 2000
-LONG_POST_LOWER_LIMIT = 1300
-SHORT_POST_LOWER_LIMIT = 150
-SHORT_POST_LOWER_LIMIT = 300
+LONG_POST_UPPER_LIMIT = 2000   ## Ideal upper length (characters) for longer posts
+LONG_POST_LOWER_LIMIT = 1300    ## Ideal lower length (characters) for longer posts
+SHORT_POST_UPPER_LIMIT = 300    ## Ideal upper length (characters) for shorter posts
+SHORT_POST_LOWER_LIMIT = 150    ## Ideal lower length (characters) for shorter posts 
 
 plot_points = {}
-x_vals = [0, 6, 0]
-y_vals = [0, 3, 2]
-
-
-def functionTransformation(x, y):
-    return
+x_vals = []
+y_vals = []
 
 
 def wordIntentValueTransformation(x):
@@ -26,6 +22,7 @@ def wordIntentValueTransformation(x):
 
 
 def getDistance(point_one, point_two):
+    # TODO
 
     return
 
@@ -38,6 +35,8 @@ def postToPoint(postInfo):
     ## Calculating x-value for the post.
     ## Is calculated based on interactons with the post, such as the number of "comments" for the posts, the average length of these "comments", how many shares a post has, and information about the post's author.
     x_val = 0
+
+    # TODO
 
     ## Calculating y-value for the post.
     ## Is calculated based on post content
@@ -59,6 +58,8 @@ def postToPoint(postInfo):
         inquisitiveRating = wordIntentValueTransformation(float(questionMarkCount)/float(len(strippedpostText))) * 100.00
         informativeRating = wordIntentValueTransformation(float(periodCount)/float(len(strippedpostText))) * 100.00
         creativityRating = wordIntentValueTransformation(((float(questionMarkCount) + float(periodCount))/2)/float(len(strippedpostText))) * 100.00
+
+    # TODO
 
     x_vals.append(x_val)
     y_vals.append(y_val)
@@ -86,10 +87,7 @@ def getPostRecommendations(userData):
     ## TODO
     return
 
-for post in samplePosts:
-    postToPoint(post)
 
-plotRecommendations({"14": {}})
 
 df = pd.DataFrame(x_vals, y_vals)
 plt.scatter(x_vals, y_vals)
