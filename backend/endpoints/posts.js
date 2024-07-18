@@ -2,48 +2,18 @@
 // Exported to server.js.
 
 module.exports = function (app, connectionsGraph) {
+  const { plotPosts } = require("../util/posts");
+
   const { PrismaClient } = require("@prisma/client");
   const prisma = new PrismaClient();
   const cors = require("cors");
   const express = require("express");
-  const expressValidator = require("express-validator");
 
   // Determines how many posts should be loaded initailly to feed.
   const FEED_LOAD_POSTS = 20;
 
   // Determines how many posts should be taken from each user.
   const USER_POSTS = 2;
-
-  /***
-   * Plots the point values of all posts.
-   * Runs once--upon starting the server.
-   */
-  async function plotPosts() {
-    let allPosts = await prisma.post.findMany();
-
-    for (const postIndex in allPosts) {
-      const comments = await prisma.comment.findMany({
-        where: { postID: allPosts[postIndex].id },
-      });
-
-      const resharesCount = await prisma.post.count({
-        where: { repostedSourceID: allPosts[postIndex].id },
-      });
-
-      const upvoteInfo = await prisma.upvote.findMany({
-        where: { userUpvoteID: allPosts[postIndex].id },
-      });
-
-      allPosts[postIndex] = {
-        ...allPosts[postIndex],
-        comments: comments,
-        resharesCount: resharesCount,
-        upvoteInfo: upvoteInfo,
-      };
-    }
-  }
-
-  plotPosts();
 
   /***
    * Gets the user data from the database using the userHandle.
@@ -154,6 +124,14 @@ module.exports = function (app, connectionsGraph) {
         tags: tags,
       },
     });
+
+    for (const tag of tags) {
+      if (tag in allTags) {
+        allTags = { ...allTags, tag: allTags[tag] + 1 };
+      } else {
+        allTags = { ...allTags, tag: 1 };
+      }
+    }
 
     res.status(200).json();
   });

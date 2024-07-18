@@ -17,6 +17,7 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .env
+/post_recommendations/__pycache__
 /prisma/migrations
 .DS_Store
 *.suo

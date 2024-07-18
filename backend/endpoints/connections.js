@@ -62,9 +62,6 @@ module.exports = async function (app, createOctokit, connectionsGraph) {
     }
   }
 
-  // All tags.
-  const tags = [];
-
   /***
    * Returns the intersection of two sets.
    */
