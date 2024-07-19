@@ -1,4 +1,5 @@
-# %%
+import sys
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -14,6 +15,9 @@ tagUses = sum(allTags.values())
 plot_points = {}
 x_vals = []
 y_vals = []
+
+## Convert string of post information to Python list.
+postInfo = eval(sys.argv[1])
 
 
 def valueTransformation(x):
@@ -38,15 +42,9 @@ def calculateAverageCommentLength(comments):
     )
 
 
-def getDistance(point_one, point_two):
-    # TODO
-
-    return
-
-
 def postToPoint(postInfo):
     """Converts post information to a plot point, (x, y).
-    Factors in things like post engagement and post quality.
+    Factors in characterists of a post, such as post engagement and post quality.
     Also used to replot posts when some interactions with post occur."""
 
     ## Calculating x-value for the post.
@@ -97,7 +95,7 @@ def postToPoint(postInfo):
     postLengthScoring = 0
     long_post = False
 
-    ## Post recieves full points if within the ideal for short or long posts.
+    ## Post recieves full points if within range of the ideal character length for short or long posts.
     if (
         postTextLength > LONG_POST_LOWER_LIMIT
         and postTextLength < LONG_POST_UPPER_LIMIT
@@ -152,9 +150,10 @@ def postToPoint(postInfo):
     x_vals.append(x_val)
     y_vals.append(y_val)
 
-    plot_points[postInfo["id"]] = [x_val, y_val]
+    postID = str(postInfo["id"])
+    plot_points[postID] = [x_val, y_val]
 
-    return (x_val, y_val)
+    return [x_val, y_val]
 
 
 def plotRecommendations(posts):
@@ -162,13 +161,12 @@ def plotRecommendations(posts):
     Post are recieved as an array of dictionaries.
     Called upon starting the server.
     """
+
     for post in posts:
         postPlot = postToPoint(post)
 
-    df = pd.DataFrame(x_vals, y_vals)
-    plt.scatter(x_vals, y_vals)
-    plt.xlim(0)
-    plt.ylim(0)
-    plt.show()
+    ## Printing to send the output back to the JS server.
+    print(plot_points)
 
-    return
+
+plotRecommendations(postInfo)
