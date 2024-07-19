@@ -1,19 +1,29 @@
 // Endpoints for retrieval of user data.
 // Exported to server.js.
 
-module.exports = function (app, connectionsGraph) {
-  const { plotPosts } = require("../util/posts");
-
+module.exports = async function (
+  app,
+  connectionsGraph,
+  postGraphPoints,
+  allTags
+) {
   const { PrismaClient } = require("@prisma/client");
   const prisma = new PrismaClient();
   const cors = require("cors");
   const express = require("express");
+  const spawn = require("child_process").spawn;
 
-  // Determines how many posts should be loaded initailly to feed.
-  const FEED_LOAD_POSTS = 20;
+  const { plotPosts } = require("./util/postsUtil");
+  const { intersection } = require("./util/generalUtil");
 
-  // Determines how many posts should be taken from each user.
-  const USER_POSTS = 2;
+  const FEED_LOAD_POSTS = 20; // Determines how many posts should be loaded initailly to feed.
+  const USER_POSTS = 2; // Determines how many posts should be taken from each user.
+  const RECENT_POSTS_FOR_RECS = 50; // The number of recent posts used to calculate recommended posts.
+  const TAG_RELATED_PERCENTAGE = 0.8; // The max percentage of recommendations that are related by tag for post recommendations; the rest are on new, adjacent topics.
+
+  // Gets the calculated points of all posts.
+  let res = await plotPosts(postGraphPoints);
+  postGraphPoints = JSON.parse(res.replaceAll("'", '"'));
 
   /***
    * Gets the user data from the database using the userHandle.
@@ -305,8 +315,154 @@ module.exports = function (app, connectionsGraph) {
   /***
    * Gets post recommendations for a user.
    */
-  app.get(
-    "/posts/recommendations/:userID/:numberOfRecs",
-    async (req, res) => {}
-  );
+  app.get("/posts/recommendations/:userID/:numberOfRecs", async (req, res) => {
+    const userID = req.params.userID;
+    const numberOfRecs = req.params.numberOfRecs;
+
+    const createPlotPosts = spawn("python3", [
+      "./post_recommendations/plotPosts.py",
+    ]);
+
+    let userInfo = await prisma.user.findUnique({
+      where: { id: Number(userID) },
+    });
+
+    if (userInfo) {
+      const connections = await prisma.connection.findMany({
+        where: {
+          AND: [
+            {
+              OR: [
+                { recipientID: Number(userID) },
+                { senderID: Number(userID) },
+              ],
+            },
+            { accepted: true },
+          ],
+        },
+      });
+
+      const connectedUsersIDs = [];
+
+      for (const connection of connections) {
+        connectedUsersIDs.push(
+          connection.recipientID === Number(userID)
+            ? connection.senderID
+            : connection.recipientID
+        );
+      }
+
+      const upvotedPosts = await prisma.upvote.findMany({
+        where: { userUpvoteID: Number(userID) },
+        orderBy: { id: "desc" },
+      });
+
+      const recentUpvotedPostsInfo = [];
+      const recentUpvotedPostsIDs = [];
+      const allInteractedPosts = [];
+      const recentTags = [];
+
+      for (const upvotedPost of upvotedPosts) {
+        const postInfo = await prisma.post.findUnique({
+          where: { id: upvotedPost.id },
+        });
+
+        allInteractedPosts.push(postInfo);
+
+        if (recentUpvotedPostsIDs.length < RECENT_POSTS_FOR_RECS) {
+          recentUpvotedPostsInfo.push(postInfo);
+          recentUpvotedPostsIDs.push(upvotedPost.id);
+          for (const tag of postInfo.tags) {
+            if (!tag in recentTags) {
+              recentTags.push(tag);
+            }
+          }
+        }
+      }
+
+      userInfo = {
+        ...userInfo,
+        recentUpvotedPostsInfo: recentUpvotedPostsInfo,
+        recentUpvotedPostsIDs: recentUpvotedPostsIDs,
+        connectedUsersIDs: connectedUsersIDs,
+        recentTags: recentTags,
+      };
+
+      const pyUserInfo = JSON.stringify(userInfo)
+        .replaceAll('"', "'")
+        .replaceAll("false", "False")
+        .replaceAll("true", "True")
+        .replaceAll("null", "None");
+
+      const pyPostGraphPoints = JSON.stringify(postGraphPoints).replaceAll(
+        '"',
+        "'"
+      );
+      const pyNumberOfRecs = JSON.stringify(numberOfRecs);
+
+      const getPostRecommendations = spawn("python3", [
+        "util/postRecommendations/getRecommendations.py",
+        pyUserInfo,
+        pyPostGraphPoints,
+        pyNumberOfRecs,
+      ]);
+
+      let similarPostIDs = []; // Get from Python script
+
+      await new Promise((resolve, reject) => {
+        getPostRecommendations.stdout.on("data", (data) => {
+          const res = data.toString().replaceAll("'", '"');
+          similarPostIDs = JSON.parse(res);
+        });
+        getPostRecommendations.stderr.on("data", (data) => {});
+        getPostRecommendations.on("close", () => {
+          resolve();
+        });
+      });
+
+      let recommendedPostsInfo = [];
+      const relatedPostsInfo = []; // Posts that don't exactly fit the user's interests based on tags but are similar in other aspects (i.e. interactions, length, etc.).
+
+      // Gets the most relevant posts first before optionally adding on related posts depending on the number of recommendations requested.
+      for (const recommendedPostID of similarPostIDs) {
+        if (
+          recommendedPostsInfo.length <
+          numberOfRecs * TAG_RELATED_PERCENTAGE
+        ) {
+          const similarPostInfo = await prisma.post.findUnique({
+            where: {
+              id: recommendedPostID,
+            },
+          });
+
+          if (
+            similarPostInfo.authorID === Number(userID) ||
+            similarPostInfo.authorID in userInfo.connectedUsersIDs
+          ) {
+            continue;
+          } else if (
+            intersection(similarPostInfo.tags, userInfo.recentTags).length > 0
+          ) {
+            recommendedPostsInfo.push(similarPostInfo);
+          } else {
+            relatedPostsInfo.push(similarPostInfo);
+          }
+        } else {
+          break;
+        }
+      }
+
+      // Add on posts that the user might be interested in.
+      recommendedPostsInfo = recommendedPostsInfo.concat(
+        relatedPostsInfo.slice(0, numberOfRecs - recommendedPostsInfo.length)
+      );
+
+      // Randomizes post order so that recommended feed is a mix of posts related by tag and post related by solely similar characteristics.
+      recommendedPostsInfo.sort(() => Math.random() - 0.5);
+
+      res.status(200).json(recommendedPostsInfo);
+    } else {
+      res.status(404).json();
+    }
+  });
 };

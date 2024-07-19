@@ -1,10 +1,12 @@
 // Uses of the GitHub REST API performed in the backend to utilize octokit instance.
 
-module.exports = function (app, createOctokit) {
+module.exports = function (app) {
   const { PrismaClient } = require("@prisma/client");
   const prisma = new PrismaClient();
   const cors = require("cors");
   const express = require("express");
+
+  const { createOctokit } = require("./util/githubUtil");
 
   /***
    * Gets all of the GitHub repositories of some user given their GitHub handle.

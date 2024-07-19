@@ -1,12 +1,14 @@
 // Endpoints for login and authentication.
 
-module.exports = function (app, createOctokit, connectionsGraph) {
+module.exports = function (app, connectionsGraph) {
   const { PrismaClient } = require("@prisma/client");
   const prisma = new PrismaClient();
   const cors = require("cors");
   const express = require("express");
   const expressValidator = require("express-validator");
   const bycrypt = require("bcrypt");
+
+  const { createOctokit } = require("./util/githubUtil");
 
   const SALT_ROUNDS = 14;
 
