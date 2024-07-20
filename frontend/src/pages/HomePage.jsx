@@ -7,9 +7,12 @@ import {
   createPost,
   generateDateTimestamp,
 } from "./util/posts";
+import { getRecommendedPosts } from "./util/posts";
 import { USER, TITLE, TEXT, MEDIA, TAGS } from "./util/enums";
 import Post from "../components/Post";
 import LoadingPage from "./LoadingPage";
+import homeFeedTab from "../../assets/HomeFeedTab.png";
+import recommendedFeedTab from "../../assets/RecommendedFeedTab.png";
 
 import "./stylesheets/HomePage.css";
 
@@ -28,9 +31,13 @@ function HomePage() {
   const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState({});
-  const [feedData, setFeedData] = useState([]);
+  const [homeFeedData, setHomeFeedData] = useState([]);
+  const [recommendedFeedData, setRecommendedFeedData] = useState([]);
+  const [feedType, setFeedType] = useState(false); // Toggles between recommended feed and feed of posts by connections. False is default feed of posts by connections.
 
   const navigate = useNavigate();
+
+  const LEN_RECOMMENDED_FEED = 5;
 
   /***
    * Toggles the modal view on click.
@@ -57,6 +64,13 @@ function HomePage() {
       ...previousPostContent,
       [inputID]: event.target.value,
     }));
+  }
+
+  /***
+   *  Changes between the feeds of recommended and featured.
+   */
+  function handleFeedType() {
+    setfeedType(!feedType);
   }
 
   /***
@@ -101,8 +115,14 @@ function HomePage() {
       const loadedUserData = await getUserData(cookies.user.userHandle);
       await setUserData(loadedUserData);
 
-      const loadedFeedData = await getFeed(cookies.user.id);
-      await setFeedData(loadedFeedData);
+      const loadedHomeFeedData = await getFeed(cookies.user.id);
+      await setHomeFeedData(loadedHomeFeedData);
+
+      const loadedRecommendedFeedData = await getRecommendedPosts(
+        cookies.user.id,
+        LEN_RECOMMENDED_FEED
+      );
+      await setRecommendedFeedData(loadedRecommendedFeedData);
     }
 
     loadData();
@@ -114,15 +134,29 @@ function HomePage() {
   } else {
     return (
       <>
+        <img className="hide" src={homeFeedTab}></img>
+        <img className="hide" src={recommendedFeedTab}></img>
         <div className="home">
           <div className="home-page page">
             <h1>Home</h1>
             <h3>{`Welcome, ${userData.firstName}`}</h3>
             <button onClick={handleModalView}>Create Post</button>
+
             <section className="feed">
-              {feedData.map((postData) => (
-                <Post key={postData.id} postInfo={postData} />
-              ))}
+              <div className="featured-feed">
+                {homeFeedData.map((postData) => (
+                  <Post key={postData.id} postInfo={postData} />
+                ))}
+              </div>
+              <h3>Recommended Posts</h3>
+              <div className="recommended-feed">
+                {recommendedFeedData.map((recommendedPostData) => (
+                  <Post
+                    key={recommendedPostData.id}
+                    postInfo={recommendedPostData}
+                  />
+                ))}
+              </div>
             </section>
           </div>
 

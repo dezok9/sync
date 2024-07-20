@@ -231,7 +231,7 @@ module.exports = async function (app, connectionsGraph) {
   });
 
   /***
-   * Gets a specified number of recommendations for a specified user.
+   * Gets a specified number of user recommendations for a specified user.
    */
   app.get(
     "/connections/recommendations/:userID/:numberOfRecs",
