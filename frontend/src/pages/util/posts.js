@@ -20,6 +20,22 @@ export async function getFeed(userID) {
 }
 
 /***
+ * Getting post recommendations for feed.
+ */
+export async function getRecommendedPosts(userID, numberOfRecs) {
+  try {
+    let postRecommendations = [];
+
+    const recommendationsDataResponse = await fetch(
+      `${DATABASE}/posts/recommendations/${userID}/${numberOfRecs}`
+    );
+    const recommendationsData = await recommendationsDataResponse.json();
+
+    return recommendationsData;
+  } catch {}
+}
+
+/***
  * Gets the user data from the database given the userHandle of the user.
  */
 export async function getUserData(userHandle) {

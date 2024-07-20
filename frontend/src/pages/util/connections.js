@@ -1,5 +1,5 @@
 import { CONNECT_STATUS } from "./enums";
-import { getUserDataID } from "./posts";
+import { getPost, getUserDataID } from "./posts";
 
 const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
 
@@ -96,20 +96,18 @@ export async function getPendingConnections(userID) {
  */
 export async function getRecommendedUsers(userID, numberOfRecs) {
   try {
-    let recommendations = [];
+    let userRecommendations = [];
 
     const recommendationIDsResponse = await fetch(
       `${DATABASE}/connections/recommendations/${userID}/${numberOfRecs}`
     );
     const recommendationIDs = await recommendationIDsResponse.json();
 
-    for (const recommendationIDIndex in recommendationIDs) {
-      const recommendationUserData = await getUserDataID(
-        recommendationIDs[recommendationIDIndex]
-      );
-      recommendations = recommendations.concat(recommendationUserData);
+    for (const recommendationID of recommendationIDs) {
+      const recommendationUserData = await getUserDataID(recommendationID);
+      userRecommendations = userRecommendations.concat(recommendationUserData);
     }
 
-    return recommendations;
+    return user;
   } catch {}
 }
