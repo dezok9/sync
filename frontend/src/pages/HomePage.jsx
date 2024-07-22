@@ -81,8 +81,8 @@ function HomePage() {
 
     // Call util function if fields valid.
     const postInfo = {
-      title: postContent[TITLE],
-      text: postContent[TEXT],
+      title: postContent[TITLE].trim(),
+      text: postContent[TEXT].trim(),
       authorID: userData.id,
       mediaURLs: postContent[MEDIA],
       date: date,
@@ -134,67 +134,91 @@ function HomePage() {
   } else {
     return (
       <>
-        <img className="hide" src={homeFeedTab}></img>
-        <img className="hide" src={recommendedFeedTab}></img>
-        <div className="home">
-          <div className="home-page page">
-            <h1>Home</h1>
-            <h3>{`Welcome, ${userData.firstName}`}</h3>
-            <button onClick={handleModalView}>Create Post</button>
+        {/* Feed backgrounds */}
+        <img className="home-feed-background" src={homeFeedTab}></img>
+        <img
+          className="recommended-feed-background"
+          src={recommendedFeedTab}
+        ></img>
+        <button onClick={handleModalView} className="post-button ">
+          Create Post
+        </button>
 
-            <section className="feed">
-              <div className="featured-feed">
+        {/* Homepage */}
+        <div className="homepage">
+          {/* Connections request sidebar */}
+          <div className="connection-requests sidebar"></div>
+
+          {/* Home Feed */}
+          <h1 className="home-tab-header">Home</h1>
+          <div className="feed">
+            <div className="home-page page">
+              <section className="posts">
                 {homeFeedData.map((postData) => (
                   <Post key={postData.id} postInfo={postData} />
                 ))}
+              </section>
+            </div>
+
+            {/* Post creation modal */}
+            <div className={"modal " + (modalOpen ? "show" : "hide")}>
+              <div>
+                <h2>Title</h2>
+                <input
+                  id={TITLE}
+                  className="modal-input"
+                  placeholder="Title"
+                  value={postContent[TITLE]}
+                  onChange={handleInputChange}
+                ></input>
+                <p
+                  className={
+                    "warning " + (titleInvalidWarning ? "show" : "hide")
+                  }
+                >
+                  Title of post can't be empty
+                </p>
               </div>
-              <h3>Recommended Posts</h3>
-              <div className="recommended-feed">
+              <div>
+                <input
+                  id={TEXT}
+                  className="modal-input body-input"
+                  placeholder="Get in sync with others..."
+                  value={postContent[TEXT]}
+                  onChange={handleInputChange}
+                ></input>
+                <p
+                  className={
+                    "warning " + (textInvalidWarning ? "show" : "hide")
+                  }
+                >
+                  Body of post can't be empty
+                </p>
+              </div>
+              <div>
+                <p>Media</p>
+              </div>
+              <button onClick={handlePost}>Post</button>
+            </div>
+          </div>
+
+          {/* Recommended Feed */}
+          <h1 className="recommended-tab-header">Recommended</h1>
+          <div className="feed" style={{ display: "none" }}>
+            <div className="home-page page">
+              <section className="posts">
                 {recommendedFeedData.map((recommendedPostData) => (
                   <Post
                     key={recommendedPostData.id}
                     postInfo={recommendedPostData}
                   />
                 ))}
-              </div>
-            </section>
+              </section>
+            </div>
           </div>
 
-          <div className={"modal " + (modalOpen ? "show" : "hide")}>
-            <div>
-              <h2>Title</h2>
-              <input
-                id={TITLE}
-                className="modal-input"
-                placeholder="Title"
-                value={postContent[TITLE]}
-                onChange={handleInputChange}
-              ></input>
-              <p
-                className={"warning " + (titleInvalidWarning ? "show" : "hide")}
-              >
-                Title of post can't be empty
-              </p>
-            </div>
-            <div>
-              <input
-                id={TEXT}
-                className="modal-input body-input"
-                placeholder="Get in sync with others..."
-                value={postContent[TEXT]}
-                onChange={handleInputChange}
-              ></input>
-              <p
-                className={"warning " + (textInvalidWarning ? "show" : "hide")}
-              >
-                Body of post can't be empty
-              </p>
-            </div>
-            <div>
-              <p>Media</p>
-            </div>
-            <button onClick={handlePost}>Post</button>
-          </div>
+          {/* Recommended connections sidebar */}
+          <div className="recommended-connections sidebar"></div>
         </div>
       </>
     );

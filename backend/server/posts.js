@@ -13,7 +13,7 @@ module.exports = async function (
   const express = require("express");
   const spawn = require("child_process").spawn;
 
-  const { plotPosts } = require("./util/postsUtil");
+  const { plotPosts, tallyTags } = require("./util/postsUtil");
   const { intersection } = require("./util/generalUtil");
 
   const FEED_LOAD_POSTS = 20; // Determines how many posts should be loaded initailly to feed.
@@ -21,8 +21,11 @@ module.exports = async function (
   const RECENT_POSTS_FOR_RECS = 50; // The number of recent posts used to calculate recommended posts.
   const TAG_RELATED_PERCENTAGE = 0.8; // The max percentage of recommendations that are related by tag for post recommendations; the rest are on new, adjacent topics.
 
+  // Get counts of all tags.
+  allTags = await tallyTags();
+
   // Gets the calculated points of all posts.
-  let res = await plotPosts(postGraphPoints);
+  let res = await plotPosts(allTags);
   postGraphPoints = JSON.parse(res.replaceAll("'", '"'));
 
   /***
@@ -104,6 +107,10 @@ module.exports = async function (
   app.get("/posts/:userID", async (req, res) => {
     const userID = req.params.userID;
 
+    const userData = await prisma.user.findUnique({
+      where: { id: Number(userID) },
+    });
+
     const userPosts = await prisma.post.findMany({
       where: {
         authorID: Number(userID),
@@ -113,7 +120,17 @@ module.exports = async function (
       },
     });
 
-    res.status(200).json(userPosts);
+    const userPostsData = userPosts.map((userPost) => ({
+      ...userPost,
+      authorData: {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        userHandle: userData.userHandle,
+        profilePicture: userData.profilePicture,
+      },
+    }));
+
+    res.status(200).json(userPostsData);
   });
 
   /***
@@ -131,7 +148,7 @@ module.exports = async function (
         text: text,
         authorID: authorID,
         mediaURLs: mediaURLs,
-        tags: tags,
+        tags: tags.map((tag) => tag.toLowerCase()),
       },
     });
 
@@ -194,6 +211,17 @@ module.exports = async function (
   app.get("/:userID/feed", async (req, res) => {
     const userID = req.params.userID;
 
+    // Used to decide if the user has liked a post.
+    const userUpvotes = [];
+
+    const userUpvotesData = await prisma.upvote.findMany({
+      where: { userUpvoteID: Number(userID) },
+    });
+
+    for (const upvote in userUpvotesData) {
+      userUpvotes.push(upvote.userUpvoteID);
+    }
+
     const connections = await prisma.connection.findMany({
       where: {
         AND: [
@@ -223,15 +251,31 @@ module.exports = async function (
         connectionID = connection.recipientID;
       }
 
+      // Get the user's information.
+      let userData = await prisma.user.findUnique({
+        where: { id: connectionID },
+      });
+
       // Get the posts made by that user using the userID.
-      const userPosts = await prisma.post.findMany({
+      let userPosts = await prisma.post.findMany({
         where: { authorID: connectionID },
         orderBy: { id: "desc" },
         take: USER_POSTS,
       });
 
       // Append the most recent posts of that user to the array.
-      feedPosts = feedPosts.concat(userPosts);
+      feedPosts = feedPosts.concat(
+        userPosts.map((userPost) => ({
+          ...userPost,
+          authenticatedUpvoted: userPost.id in userUpvotes,
+          authorData: {
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            userHandle: userData.userHandle,
+            profilePicture: userData.profilePicture,
+          },
+        }))
+      );
       connectionsIdx += 1;
     }
 
@@ -239,54 +283,78 @@ module.exports = async function (
   });
 
   /***
-   * Upvotes or downvotes a post.
+   * Upvotes a post.
    * Ensures and enforces that a user can only upvote a unique post once.
    */
   app.put("/upvote/:postID", async (req, res) => {
     const postID = req.params.postID;
-    const { userID, newUpvotes } = req.body;
+    const { userID } = req.body;
 
-    const postUserLikes = await prisma.upvote.findMany({
+    const pastUpvote = await prisma.upvote.findMany({
+      where: { userUpvoteID: userID },
+    });
+
+    if (pastUpvote.length > 0) {
+      res.status(409).json();
+      return;
+    }
+
+    const upvotedPost = await prisma.post.findUnique({
+      where: { id: Number(postID) },
+    });
+
+    await prisma.post.update({
       where: {
+        id: Number(postID),
+      },
+      data: {
+        upvoteCount: upvotedPost.upvoteCount + 1,
+      },
+    });
+
+    await prisma.upvote.create({
+      data: {
         postID: Number(postID),
         userUpvoteID: userID,
       },
     });
+    res.status(200).json();
+  });
 
-    if (postUserLikes.length === 0) {
-      // The user has not liked this post before.
-      await prisma.post.update({
-        where: {
-          id: Number(postID),
-        },
-        data: {
-          upvoteCount: newUpvotes,
-        },
-      });
+  /***
+   * Downvotes a post.
+   */
+  app.put("/downvote/:postID", async (req, res) => {
+    const postID = req.params.postID;
+    const { userID } = req.body;
 
-      await prisma.upvote.create({
-        data: {
-          postID: Number(postID),
-          userUpvoteID: userID,
-        },
-      });
-    } else {
-      // The user has liked this post before.
-      await prisma.post.update({
-        where: {
-          id: Number(postID),
-        },
-        data: {
-          upvoteCount: newUpvotes - 2,
-        },
-      });
+    const userUpvote = await prisma.upvote.findMany({
+      where: AND[({ userUpvoteID: userID }, { postID: Number(postID) })],
+    });
 
-      await prisma.upvote.delete({
-        where: {
-          id: postUserLikes[0].id,
-        },
-      });
+    if (!userUpvote.length > 0) {
+      res.status(409).json();
+      return;
     }
+
+    const upvotedPost = await prisma.post.findUnique({
+      where: { id: Number(postID) },
+    });
+
+    await prisma.post.update({
+      where: {
+        id: Number(postID),
+      },
+      data: {
+        upvoteCount: upvotedPost.upvoteCount - 1,
+      },
+    });
+
+    await prisma.upvote.delete({
+      where: {
+        where: AND[({ userUpvoteID: userID }, { postID: Number(postID) })],
+      },
+    });
 
     res.status(200).json();
   });
@@ -364,7 +432,7 @@ module.exports = async function (
 
       for (const upvotedPost of upvotedPosts) {
         const postInfo = await prisma.post.findUnique({
-          where: { id: upvotedPost.id },
+          where: { id: upvotedPost.postID },
         });
 
         allInteractedPosts.push(postInfo);

@@ -1,12 +1,28 @@
 .post {
   padding: 2% 5%;
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
   margin: 2% 0%;
-  width: 25%;
-  border: 2px solid white;
+  width: 90%;
+  min-height: 90%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
 }
 .post:hover {
   cursor: pointer;
+}
+
+.author {
+  margin: 1% 0%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.author-info {
+  margin: 0% 2%;
 }
 
 .date-time {
@@ -15,4 +31,13 @@
 
 .upvote:hover {
   cursor: pointer;
+}
+
+.tldr {
+  font-size: large;
+  width: fit-content;
+  text-align: center;
+  border-radius: 5px;
+  padding: 1% 3%;
+  background-color: rgba(255, 255, 255, 0.5);
 }

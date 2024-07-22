@@ -1,8 +1,13 @@
 import { useCookies } from "react-cookie";
-import { upvotePost } from "../pages/util/posts";
+import {
+  upvotePost,
+  removeUpvote,
+  deriveTimeSincePost,
+} from "../pages/util/posts";
 import { useNavigate } from "react-router-dom";
 import { USER } from "../pages/util/enums";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { renderProfilePicture } from "../pages/util/html";
 
 import "./stylesheets/Post.css";
 
@@ -13,16 +18,19 @@ function Post(postInfo) {
   const navigate = useNavigate();
 
   /***
-   * Hanldes upvoting a post.
+   * Hanldes upvoting or downvoting a post.
    */
-  function handleUpvote(event) {
-    event.stopPropagation();
-    upvotePost(
-      postInfo.postInfo.id,
-      cookies.user.id,
-      postInfo.postInfo.upvoteCount + 1
-    );
+  function handleUpvote() {
+    if (postInfo.postInfo.authenticatedUpvoted) {
+      removeUpvote(postInfo.postInfo.id, cookies.user.id);
+    } else {
+      upvotePost(postInfo.postInfo.id, cookies.user.id);
+    }
   }
+
+  useEffect(() => {
+    handleUpvote();
+  }, [upvotes]);
 
   return (
     <>
@@ -30,21 +38,37 @@ function Post(postInfo) {
         className="post"
         onClick={() => navigate(`/post/${postInfo.postInfo.id}`)}
       >
+        <div className="author">
+          {renderProfilePicture(postInfo.postInfo.authorData.profilePicture)}
+          <div className="author-info">
+            <h4>
+              {postInfo.postInfo.authorData.firstName}{" "}
+              {postInfo.postInfo.authorData.lastName}
+            </h4>
+            <h5>@{postInfo.postInfo.authorData.userHandle}</h5>
+            <p className="date-time">
+              {deriveTimeSincePost(
+                postInfo.postInfo.date,
+                postInfo.postInfo.timestamp
+              )}
+            </p>
+          </div>
+        </div>
+
         <h1>{postInfo.postInfo.title}</h1>
-        <p>Author ID: {postInfo.postInfo.authorID}</p>
+
+        <h3 className="tldr">TL;DR</h3>
         <p>{postInfo.postInfo.text}</p>
-        <p className="date-time">{postInfo.postInfo.date}</p>
-        <p className="date-time">{postInfo.postInfo.timestamp}</p>
         <p>
           <i
             className="fa-solid fa-arrow-up upvote"
-            onClick={(event) => handleUpvote(event)}
+            onClick={(event) => {
+              event.stopPropagation();
+              setUpvotes(upvotes + 1);
+            }}
           ></i>{" "}
           Upvotes: {upvotes}
         </p>
-        <div>
-          <h3>Comments:</h3>
-        </div>
       </div>
     </>
   );

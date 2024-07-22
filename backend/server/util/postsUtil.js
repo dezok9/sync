@@ -7,10 +7,31 @@ const express = require("express");
 const spawn = require("child_process").spawn;
 
 /***
+ * Tallies up the freqency of all tags used in posts.
+ */
+async function tallyTags() {
+  let tags = {};
+
+  const allPosts = await prisma.post.findMany();
+
+  for (const post of allPosts) {
+    for (const tag of post.tags) {
+      if (tag in tags) {
+        tags = { ...tags, [tag]: tags[tag] + 1 };
+      } else {
+        tags = { ...tags, [tag]: 1 };
+      }
+    }
+  }
+
+  return tags;
+}
+
+/***
  * Plots the point values of all posts.
  * Runs once--upon starting the server.
  */
-async function plotPosts() {
+async function plotPosts(allTags) {
   let allPosts = await prisma.post.findMany();
 
   for (const postIndex in allPosts) {
@@ -41,9 +62,17 @@ async function plotPosts() {
     .replaceAll("true", "True")
     .replaceAll("null", "None");
 
+  // Convert tag information to Python.
+  const pyAllTags = JSON.stringify(allTags)
+    .replaceAll('"', "'")
+    .replaceAll("false", "False")
+    .replaceAll("true", "True")
+    .replaceAll("null", "None");
+
   const generatePostPoints = spawn("python3", [
     "util/postRecommendations/plotPosts.py",
     pyAllPostInfo,
+    pyAllTags,
   ]);
 
   let postPoints = [];
@@ -61,4 +90,4 @@ async function plotPosts() {
   return postPoints;
 }
 
-module.exports = { plotPosts };
+module.exports = { tallyTags, plotPosts };

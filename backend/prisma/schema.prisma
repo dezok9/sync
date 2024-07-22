@@ -51,6 +51,7 @@ model Post {
   mediaURLs           String[]      @default([])
   tags                String[]      @default([])
   title               String
+  tldr                String?
   date                String
   timestamp           String
   text                String
