@@ -32,3 +32,8 @@ export const TITLE = "title";
 export const TEXT = "text";
 export const MEDIA = "media";
 export const TAGS = "tags";
+export const TLDR = "tl;dr";
+
+// Enums for post text and formatting code.
+export const CODE_OPENER = "<>";
+export const CODE_CLOSER = "</>";

@@ -1,4 +1,5 @@
-import { Cookies, useCookies } from "react-cookie";
+import { USER, TITLE, TEXT, MEDIA, TAGS, TLDR } from "./util/enums";
+import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -6,13 +7,13 @@ import {
   getUserData,
   createPost,
   generateDateTimestamp,
+  getRecommendedPosts,
 } from "./util/posts";
-import { getRecommendedPosts } from "./util/posts";
-import { USER, TITLE, TEXT, MEDIA, TAGS } from "./util/enums";
+import { validateCodeInjection } from "./util/homepage";
+import { UploadWidget } from "./util/html";
+
 import Post from "../components/Post";
 import LoadingPage from "./LoadingPage";
-import homeFeedTab from "../../assets/HomeFeedTab.png";
-import recommendedFeedTab from "../../assets/RecommendedFeedTab.png";
 
 import "./stylesheets/HomePage.css";
 
@@ -22,11 +23,13 @@ function HomePage() {
   const [postContent, setPostContent] = useState({
     [TITLE]: "",
     [TEXT]: "",
+    [TLDR]: "",
     [MEDIA]: [],
     [TAGS]: [],
   });
   const [titleInvalidWarning, setTitleInvalidWarning] = useState(false);
   const [textInvalidWarning, setTextInvalidWarning] = useState(false);
+  const [codeTextInvalidWarning, setCodeTextInvalidWarning] = useState(false);
 
   const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,15 +47,6 @@ function HomePage() {
    */
   function handleModalView() {
     setModalOpen(!modalOpen);
-
-    if (modalOpen) {
-      postContent[TEXT] = "";
-      postContent[TITLE] = "";
-      postContent[MEDIA] = [];
-      postContent[TAGS] = [];
-      setTitleInvalidWarning(false);
-      setTextInvalidWarning(false);
-    }
   }
 
   /***
@@ -70,7 +64,7 @@ function HomePage() {
    *  Changes between the feeds of recommended and featured.
    */
   function handleFeedType() {
-    setfeedType(!feedType);
+    setFeedType(!feedType);
   }
 
   /***
@@ -83,6 +77,7 @@ function HomePage() {
     const postInfo = {
       title: postContent[TITLE].trim(),
       text: postContent[TEXT].trim(),
+      tldr: postContent[TLDR].trim(),
       authorID: userData.id,
       mediaURLs: postContent[MEDIA],
       date: date,
@@ -91,21 +86,35 @@ function HomePage() {
 
     if (postContent[TITLE].replace(" ", "") === "") {
       setTitleInvalidWarning(true);
+      return;
     } else {
       setTitleInvalidWarning(false);
     }
 
     if (postContent[TEXT].replace(" ", "") === "") {
       setTextInvalidWarning(true);
+      return;
     } else {
       setTextInvalidWarning(false);
     }
 
-    if (textInvalidWarning || titleInvalidWarning) {
+    if (!validateCodeInjection(postContent[TEXT])) {
+      setCodeTextInvalidWarning(true);
       return;
     }
 
     createPost(postInfo);
+
+    // Reset modal values.
+    postContent[TEXT] = "";
+    postContent[TITLE] = "";
+    postContent[TLDR] = "";
+    postContent[MEDIA] = [];
+    postContent[TAGS] = [];
+    setTitleInvalidWarning(false);
+    setTextInvalidWarning(false);
+    setCodeTextInvalidWarning(false);
+
     handleModalView();
   }
 
@@ -134,21 +143,12 @@ function HomePage() {
   } else {
     return (
       <>
-        {/* Feed backgrounds */}
-        <img className="home-feed-background" src={homeFeedTab}></img>
-        <img
-          className="recommended-feed-background"
-          src={recommendedFeedTab}
-        ></img>
         <button onClick={handleModalView} className="post-button ">
           Create Post
         </button>
 
         {/* Homepage */}
         <div className="homepage">
-          {/* Connections request sidebar */}
-          <div className="connection-requests sidebar"></div>
-
           {/* Home Feed */}
           <h1 className="home-tab-header">Home</h1>
           <div className="feed">
@@ -176,10 +176,18 @@ function HomePage() {
                     "warning " + (titleInvalidWarning ? "show" : "hide")
                   }
                 >
-                  Title of post can't be empty
+                  Title of post can't be empty.
                 </p>
               </div>
               <div>
+                <input
+                  id={TLDR}
+                  className="modal-input body-input"
+                  placeholder="A short summary (optional)"
+                  value={postContent[TLDR]}
+                  onChange={handleInputChange}
+                ></input>
+
                 <input
                   id={TEXT}
                   className="modal-input body-input"
@@ -192,11 +200,19 @@ function HomePage() {
                     "warning " + (textInvalidWarning ? "show" : "hide")
                   }
                 >
-                  Body of post can't be empty
+                  Body of post can't be empty.
+                </p>
+                <p
+                  className={
+                    "warning " + (codeTextInvalidWarning ? "show" : "hide")
+                  }
+                >
+                  Code brackets are not closed & cannot be nested!
                 </p>
               </div>
               <div>
                 <p>Media</p>
+                <UploadWidget />
               </div>
               <button onClick={handlePost}>Post</button>
             </div>

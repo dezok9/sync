@@ -1,6 +1,8 @@
 import { useCookies } from "react-cookie";
 import { USER } from "../pages/util/enums";
 
+import SyncLogo from "../../assets/SyncLogo.svg";
+
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 
 import "./stylesheets/Header.css";
@@ -18,39 +20,38 @@ function Header() {
 
   if (cookies[USER]) {
     return (
-      <header className="header">
-        <h3 className="sync-logo">Sync</h3>
-        <section className="nav-bar">
+      <header className="sidebar">
+        <img src={SyncLogo} className="sync-logo"></img>
+
+        <div>
           <p
-            className="nav-bar-link"
+            className="sidebar-link"
             onClick={() => window.location.assign(`${WEB_ADDRESS}`)}
           >
-            Home
+            <i class="home-sidebar-icon fa-solid fa-house fa-lg"></i> Home
           </p>
-          <p
-            className="nav-bar-link"
-            onClick={() =>
-              window.location.assign(
-                `${WEB_ADDRESS}/profile/${cookies.user.userHandle}`
-              )
-            }
-          >
-            Profile
-          </p>
-          <p
-            className="nav-bar-link"
-            onClick={() => window.location.assign(`${WEB_ADDRESS}/connections`)}
-          >
-            Connections
-          </p>
-        </section>
-        <div className="search-bar">
-          <i className="fa-solid fa-magnifying-glass"></i>
-          <input className="search-field"></input>
         </div>
-        <section className="logout nav-bar-link" onClick={() => logOut()}>
-          <i className="fa-solid fa-door-open fa-xl"></i> Logout
-        </section>
+        <p
+          className="sidebar-link"
+          onClick={() =>
+            window.location.assign(
+              `${WEB_ADDRESS}/profile/${cookies.user.userHandle}`
+            )
+          }
+        >
+          <i class="profile-sidebar-icon fa-solid fa-user fa-lg"></i> Profile
+        </p>
+        <p
+          className="sidebar-link"
+          onClick={() => window.location.assign(`${WEB_ADDRESS}/connections`)}
+        >
+          <i class="connections-sidebar-icon fa-solid fa-link fa-lg"></i>{" "}
+          Connections
+        </p>
+        <div className="logout sidebar-link" onClick={() => logOut()}>
+          <i class="logout-sidebar-icon fa-solid fa-arrow-right-from-bracket fa-lg"></i>{" "}
+          Logout
+        </div>
       </header>
     );
   } else {

@@ -3,17 +3,6 @@
   flex-direction: row;
 }
 
-.sidebar {
-  width: 30%;
-  background-color: grey;
-}
-
-.connection-requests {
-}
-
-.recommended-requests {
-}
-
 .feed {
   display: flex;
   flex-direction: row;

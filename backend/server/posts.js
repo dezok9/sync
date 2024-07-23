@@ -25,8 +25,8 @@ module.exports = async function (
   allTags = await tallyTags();
 
   // Gets the calculated points of all posts.
-  let res = await plotPosts(allTags);
-  postGraphPoints = JSON.parse(res.replaceAll("'", '"'));
+  const plots = await plotPosts(allTags);
+  postGraphPoints = JSON.parse(plots.replaceAll("'", '"'));
 
   /***
    * Gets the user data from the database using the userHandle.
@@ -137,10 +137,10 @@ module.exports = async function (
    * Creates a post.
    */
   app.post("/create-post", async (req, res) => {
-    const { title, date, timestamp, text, authorID, mediaURLs, tags } =
+    const { title, date, tldr, timestamp, text, authorID, mediaURLs, tags } =
       req.body;
 
-    await prisma.post.create({
+    const createdPost = await prisma.post.create({
       data: {
         title: title,
         date: date,
@@ -149,6 +149,7 @@ module.exports = async function (
         authorID: authorID,
         mediaURLs: mediaURLs,
         tags: tags.map((tag) => tag.toLowerCase()),
+        tldr: tldr,
       },
     });
 
@@ -159,6 +160,14 @@ module.exports = async function (
         allTags = { ...allTags, tag: 1 };
       }
     }
+
+    // Adds a point to the posts graph.
+    const plot = await plotPosts(allTags, createdPost.id);
+    const jsPlot = JSON.parse(plot.replaceAll("'", '"'));
+    postGraphPoints = {
+      ...postGraphPoints,
+      [createdPost.id]: jsPlot[createdPost.id],
+    };
 
     res.status(200).json();
   });
@@ -387,10 +396,6 @@ module.exports = async function (
     const userID = req.params.userID;
     const numberOfRecs = req.params.numberOfRecs;
 
-    const createPlotPosts = spawn("python3", [
-      "./post_recommendations/plotPosts.py",
-    ]);
-
     let userInfo = await prisma.user.findUnique({
       where: { id: Number(userID) },
     });
@@ -497,11 +502,30 @@ module.exports = async function (
           recommendedPostsInfo.length <
           numberOfRecs * TAG_RELATED_PERCENTAGE
         ) {
-          const similarPostInfo = await prisma.post.findUnique({
+          let similarPostInfo = await prisma.post.findUnique({
             where: {
               id: recommendedPostID,
             },
           });
+
+          const postAuthor = await prisma.user.findUnique({
+            where: { id: similarPostInfo.authorID },
+          });
+
+          const userUpvotes = await prisma.upvote.findMany({
+            where: { userUpvoteID: Number(userID) },
+          });
+
+          similarPostInfo = {
+            ...similarPostInfo,
+            authenticatedUpvoted: Number(userID) in userUpvotes,
+            authorData: {
+              firstName: postAuthor.firstName,
+              lastName: postAuthor.lastName,
+              userHandle: postAuthor.userHandle,
+              profilePicture: postAuthor.profilePicture,
+            },
+          };
 
           if (
             similarPostInfo.authorID === Number(userID) ||

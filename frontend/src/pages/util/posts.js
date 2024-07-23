@@ -83,7 +83,7 @@ export async function getUserPosts(userID) {
  * Creates a post given the information to be stored.
  */
 export async function createPost(postInfo) {
-  const { title, text, authorID, mediaURLs, date, timestamp } = postInfo;
+  const { title, text, tldr, authorID, mediaURLs, date, timestamp } = postInfo;
 
   try {
     const response = await fetch(`${DATABASE}/create-post`, {
@@ -96,6 +96,7 @@ export async function createPost(postInfo) {
         text: text,
         authorID: authorID,
         mediaURLs: mediaURLs,
+        tldr: tldr,
         date: date,
         timestamp: timestamp,
         tags: [],
@@ -214,6 +215,10 @@ export function generateDateTimestamp() {
  * Calculates how long ago a post was made.
  */
 export function deriveTimeSincePost(postDate, postTimestamp) {
+  if (!postDate || postTimestamp) {
+    return;
+  }
+
   const currentDateTime = generateDateTimestamp();
   const splitPostDate = postDate.split(" ");
   const splitCurrentDate = currentDateTime.date.split(" ");

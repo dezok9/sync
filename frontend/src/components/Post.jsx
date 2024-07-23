@@ -7,7 +7,12 @@ import {
 import { useNavigate } from "react-router-dom";
 import { USER } from "../pages/util/enums";
 import { useState, useEffect } from "react";
-import { renderProfilePicture } from "../pages/util/html";
+import {
+  renderProfilePicture,
+  renderPostText,
+  renderTLDR,
+} from "../pages/util/html";
+import { CODE_OPENER, CODE_CLOSER } from "../pages/util/enums";
 
 import "./stylesheets/Post.css";
 
@@ -27,10 +32,6 @@ function Post(postInfo) {
       upvotePost(postInfo.postInfo.id, cookies.user.id);
     }
   }
-
-  useEffect(() => {
-    handleUpvote();
-  }, [upvotes]);
 
   return (
     <>
@@ -56,13 +57,17 @@ function Post(postInfo) {
         </div>
 
         <h1>{postInfo.postInfo.title}</h1>
-
-        <h3 className="tldr">TL;DR</h3>
-        <p>{postInfo.postInfo.text}</p>
+        <div>{renderTLDR(postInfo.postInfo.tldr)}</div>
+        <div>
+          {postInfo.postInfo.text
+            .split(CODE_OPENER)
+            .map((textSegment) => renderPostText(textSegment))}
+        </div>
         <p>
           <i
             className="fa-solid fa-arrow-up upvote"
             onClick={(event) => {
+              handleUpvote();
               event.stopPropagation();
               setUpvotes(upvotes + 1);
             }}

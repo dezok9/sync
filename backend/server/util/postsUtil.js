@@ -28,27 +28,33 @@ async function tallyTags() {
 }
 
 /***
- * Plots the point values of all posts.
- * Runs once--upon starting the server.
+ * Plots either one or all of the point values of the post(s).
+ * Runs upon starting the server and creating a new post.
  */
-async function plotPosts(allTags) {
-  let allPosts = await prisma.post.findMany();
+async function plotPosts(allTags, postID) {
+  let posts = [];
 
-  for (const postIndex in allPosts) {
+  if (postID) {
+    posts = await prisma.post.findMany({ where: { id: postID } });
+  } else {
+    posts = await prisma.post.findMany();
+  }
+
+  for (const postIndex in posts) {
     const comments = await prisma.comment.findMany({
-      where: { postID: allPosts[postIndex].id },
+      where: { postID: posts[postIndex].id },
     });
 
     const resharesCount = await prisma.post.count({
-      where: { repostedSourceID: allPosts[postIndex].id },
+      where: { repostedSourceID: posts[postIndex].id },
     });
 
     const upvoteInfo = await prisma.upvote.findMany({
-      where: { userUpvoteID: allPosts[postIndex].id },
+      where: { userUpvoteID: posts[postIndex].id },
     });
 
-    allPosts[postIndex] = {
-      ...allPosts[postIndex],
+    posts[postIndex] = {
+      ...posts[postIndex],
       comments: comments,
       resharesCount: resharesCount,
       upvoteInfo: upvoteInfo,
@@ -56,7 +62,7 @@ async function plotPosts(allTags) {
   }
 
   // Convert post information to Python.
-  const pyAllPostInfo = JSON.stringify(allPosts)
+  const pyAllPostInfo = JSON.stringify(posts)
     .replaceAll('"', "'")
     .replaceAll("false", "False")
     .replaceAll("true", "True")
