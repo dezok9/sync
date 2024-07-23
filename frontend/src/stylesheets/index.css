@@ -1,20 +1,18 @@
-.plus-jakarta-sans {
-  font-family: "Plus Jakarta Sans", sans-serif;
+.wix-madefor-display {
+  font-family: "Wix Madefor Display", sans-serif;
   font-optical-sizing: auto;
   font-weight: 500;
-  font-style: normal;
 }
 
 * {
   margin: 0;
-  font-family: "Plus Jakarta Sans";
+  font-family: "Wix Madefor Display";
 }
 
 :root {
   --blue-grey: rgba(43, 49, 55, 1);
-  --near-black: rgba(20, 20, 20, 1);
+  --near-black: rgba(39, 39, 39, 1);
   --off-white: rgba(255, 252, 247, 1);
-  --purple-accent: rgba(152, 167, 255, 1);
 }
 
 body {
