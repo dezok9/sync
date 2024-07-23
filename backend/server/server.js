@@ -27,6 +27,7 @@ const auth = require("./auth")(app, connectionsGraph);
 const github = require("./github")(app);
 const featuredProjects = require("./featuredProjects")(app);
 const connections = require("./connections")(app, connectionsGraph);
+const interactions = require("./interactions")(app);
 const posts = require("./posts")(
   app,
   connectionsGraph,

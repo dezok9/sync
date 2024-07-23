@@ -6,7 +6,6 @@ module.exports = async function (app, connectionsGraph) {
   const cors = require("cors");
   const express = require("express");
 
-  const { connected } = require("process");
   const { createOctokit } = require("./util/githubUtil");
   const {
     ADJACENT_PROFILE_SIMILARITY_POINTS,

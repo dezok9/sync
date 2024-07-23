@@ -34,6 +34,8 @@ model User {
   chatRecipients      Chat[]        @relation(name: "chat recipient")
   connectionSender    Connection[]  @relation(name: "connection sender")
   connectionRecipient Connection[]  @relation(name: "connection recipient")
+  userInteraction     Interaction[] @relation(name: "interacting user")
+  userTarget          Interaction[] @relation(name: "target user")
 }
 
 model Connection {
@@ -45,6 +47,27 @@ model Connection {
 
   recipientID         Int
   recipient           User          @relation(fields: [recipientID], references: [id], name: "connection recipient", onDelete: Cascade)
+}
+
+model Interaction {
+  id                  Int           @id @default(autoincrement())
+  interactionDuration Int
+
+  viewedProfile       Boolean       @default(false)
+
+  viewedPost          Boolean       @default(false)
+  postID              Int
+  post                Post?         @relation(fields: [postID], references: [id], name: "post interaction")
+
+  commented           Boolean       @default(false)
+  commentID           Int
+  comment             Comment?      @relation(fields: [commentID], references: [id], name: "comment interaction")
+
+  interactingUserID   Int
+  interactingUser     User          @relation(fields: [interactingUserID], references: [id], name: "interacting user")
+
+  targetUserID        Int
+  targetUser          User          @relation(fields: [targetUserID], references: [id], name: "target user")
 }
 
 model Post {
@@ -68,6 +91,7 @@ model Post {
   upvotes             Upvote[]
   comments            Comment[]
   reposters           Post[]        @relation(name: "reposts")
+  postInteractions    Interaction[] @relation(name: "post interaction")
 }
 
 model Upvote {
@@ -96,6 +120,8 @@ model Comment {
 
   authorID            Int
   author              User          @relation(fields: [authorID], references: [id], onDelete: Cascade)
+
+  commentInteraction  Interaction[] @relation(name: "comment interaction")
 }
 
 model Chat {
