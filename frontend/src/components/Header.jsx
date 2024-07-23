@@ -1,7 +1,7 @@
 import { useCookies } from "react-cookie";
 import { USER } from "../pages/util/enums";
 
-import SyncLogo from "../../assets/SyncLogo.svg";
+import SyncLogo from "../../assets/OutlinedLogo.svg";
 
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 
