@@ -7,27 +7,54 @@ const express = require("express");
 const spawn = require("child_process").spawn;
 
 /***
- * Plots the point values of all posts.
- * Runs once--upon starting the server.
+ * Tallies up the freqency of all tags used in posts.
  */
-async function plotPosts() {
-  let allPosts = await prisma.post.findMany();
+async function tallyTags() {
+  let tags = {};
 
-  for (const postIndex in allPosts) {
+  const allPosts = await prisma.post.findMany();
+
+  for (const post of allPosts) {
+    for (const tag of post.tags) {
+      if (tag in tags) {
+        tags = { ...tags, [tag]: tags[tag] + 1 };
+      } else {
+        tags = { ...tags, [tag]: 1 };
+      }
+    }
+  }
+
+  return tags;
+}
+
+/***
+ * Plots either one or all of the point values of the post(s).
+ * Runs upon starting the server and creating a new post.
+ */
+async function plotPosts(allTags, postID) {
+  let posts = [];
+
+  if (postID) {
+    posts = await prisma.post.findMany({ where: { id: postID } });
+  } else {
+    posts = await prisma.post.findMany();
+  }
+
+  for (const postIndex in posts) {
     const comments = await prisma.comment.findMany({
-      where: { postID: allPosts[postIndex].id },
+      where: { postID: posts[postIndex].id },
     });
 
     const resharesCount = await prisma.post.count({
-      where: { repostedSourceID: allPosts[postIndex].id },
+      where: { repostedSourceID: posts[postIndex].id },
     });
 
     const upvoteInfo = await prisma.upvote.findMany({
-      where: { userUpvoteID: allPosts[postIndex].id },
+      where: { userUpvoteID: posts[postIndex].id },
     });
 
-    allPosts[postIndex] = {
-      ...allPosts[postIndex],
+    posts[postIndex] = {
+      ...posts[postIndex],
       comments: comments,
       resharesCount: resharesCount,
       upvoteInfo: upvoteInfo,
@@ -35,7 +62,14 @@ async function plotPosts() {
   }
 
   // Convert post information to Python.
-  const pyAllPostInfo = JSON.stringify(allPosts)
+  const pyAllPostInfo = JSON.stringify(posts)
+    .replaceAll('"', "'")
+    .replaceAll("false", "False")
+    .replaceAll("true", "True")
+    .replaceAll("null", "None");
+
+  // Convert tag information to Python.
+  const pyAllTags = JSON.stringify(allTags)
     .replaceAll('"', "'")
     .replaceAll("false", "False")
     .replaceAll("true", "True")
@@ -44,6 +78,7 @@ async function plotPosts() {
   const generatePostPoints = spawn("python3", [
     "util/postRecommendations/plotPosts.py",
     pyAllPostInfo,
+    pyAllTags,
   ]);
 
   let postPoints = [];
@@ -61,4 +96,4 @@ async function plotPosts() {
   return postPoints;
 }
 
-module.exports = { plotPosts };
+module.exports = { tallyTags, plotPosts };

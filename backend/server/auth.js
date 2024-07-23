@@ -84,7 +84,7 @@ module.exports = function (app, connectionsGraph) {
 
     bycrypt.hash(password, SALT_ROUNDS, async function (err, hashed) {
       try {
-        await prisma.user.create({
+        const createdUser = await prisma.user.create({
           data: {
             firstName: firstName,
             lastName: lastName,
@@ -95,11 +95,7 @@ module.exports = function (app, connectionsGraph) {
           },
         });
 
-        const userData = await prisma.user.findUnique({
-          where: { userHandle: userHandle },
-        });
-
-        connectionsGraph = { ...connectionsGraph, [userData.id]: [] };
+        connectionsGraph = { ...connectionsGraph, [createdUser.id]: [] };
 
         res.status(201).json();
       } catch (err) {

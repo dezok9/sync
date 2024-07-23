@@ -1,12 +1,33 @@
+:root {
+  --light-purple: rgba(185, 92, 244, 0.8);
+  --deep-purple: rgba(160, 32, 240, 0.8);
+}
+
 .post {
   padding: 2% 5%;
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
   margin: 2% 0%;
-  width: 25%;
-  border: 2px solid white;
+  width: 90%;
+  min-height: 65%;
+  border: 1px solid white;
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
 }
 .post:hover {
   cursor: pointer;
+}
+
+.author {
+  margin: 1% 0%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.author-info {
+  margin: 0% 2%;
 }
 
 .date-time {

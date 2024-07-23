@@ -9,15 +9,15 @@ LONG_POST_LOWER_LIMIT = 1300  ## Ideal lower length (characters) for longer post
 SHORT_POST_UPPER_LIMIT = 300  ## Ideal upper length (characters) for shorter posts
 SHORT_POST_LOWER_LIMIT = 150  ## Ideal lower length (characters) for shorter posts
 
-allTags = {}
-tagUses = sum(allTags.values())
-
 plot_points = {}
 x_vals = []
 y_vals = []
 
 ## Convert string of post information to Python list.
 postInfo = eval(sys.argv[1])
+allTags = eval(sys.argv[2])
+
+tagUses = sum(allTags.values())
 
 
 def valueTransformation(x):

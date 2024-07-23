@@ -1,7 +1,19 @@
 import { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
-import { getPost, generateDateTimestamp, createComment } from "./util/posts";
+import {
+  getPost,
+  generateDateTimestamp,
+  createComment,
+  getUserDataID,
+  deriveTimeSincePost,
+} from "./util/posts";
+import {
+  renderPostTextHelper,
+  renderProfilePicture,
+  renderTLDR,
+} from "./util/html";
 import { USER } from "./util/enums";
+import { CODE_OPENER } from "./util/enums";
 
 import "./stylesheets/PostPage.css";
 import LoadingPage from "./LoadingPage";
@@ -81,6 +93,9 @@ function Post() {
       const loadedPostData = await getPost(postID);
       await setPostData(loadedPostData);
       await setCommentData(loadedPostData.comments);
+
+      const loadedAuthorData = await getUserDataID(loadedPostData.authorID);
+      await setPostAuthorData(loadedAuthorData);
     }
 
     loadData();
@@ -92,8 +107,18 @@ function Post() {
   } else {
     return (
       <div className="post">
+        <div>{renderProfilePicture(postAuthorData.profilePicture)}</div>
+        <h3>
+          {postAuthorData.firstName} {postAuthorData.lastName}
+        </h3>
+        <h5>@{postAuthorData.userHandle}</h5>
+        <p className="date-time">
+          {deriveTimeSincePost(postData.date, postData.timestamp)}
+        </p>
+
         <h2>{postData.title}</h2>
-        <p>{postData.text}</p>
+        <div>{renderTLDR(postData.tldr)}</div>
+        <p>{renderPostTextHelper(postData.text)}</p>
 
         <div>
           <input

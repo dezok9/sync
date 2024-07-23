@@ -17,6 +17,7 @@ model User {
   id                  Int           @id @default(autoincrement())
   email               String        @unique
   userHandle          String        @unique
+  linkedIn            String        @default("")
   githubHandle        String        @unique
   githubAccessToken   String        @default("")
   encryptedPassword   String
@@ -51,6 +52,7 @@ model Post {
   mediaURLs           String[]      @default([])
   tags                String[]      @default([])
   title               String
+  tldr                String?
   date                String
   timestamp           String
   text                String
