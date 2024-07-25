@@ -28,7 +28,7 @@ function Header() {
             className="sidebar-link"
             onClick={() => window.location.assign(`${WEB_ADDRESS}`)}
           >
-            <i class="home-sidebar-icon fa-solid fa-house fa-lg"></i> Home
+            <i className="home-sidebar-icon fa-solid fa-house fa-lg"></i> Home
           </p>
         </div>
         <p
@@ -39,17 +39,18 @@ function Header() {
             )
           }
         >
-          <i class="profile-sidebar-icon fa-solid fa-user fa-lg"></i> Profile
+          <i className="profile-sidebar-icon fa-solid fa-user fa-lg"></i>{" "}
+          Profile
         </p>
         <p
           className="sidebar-link"
           onClick={() => window.location.assign(`${WEB_ADDRESS}/connections`)}
         >
-          <i class="connections-sidebar-icon fa-solid fa-link fa-lg"></i>{" "}
+          <i className="connections-sidebar-icon fa-solid fa-link fa-lg"></i>{" "}
           Connections
         </p>
         <div className="logout sidebar-link" onClick={() => logOut()}>
-          <i class="logout-sidebar-icon fa-solid fa-arrow-right-from-bracket fa-lg"></i>{" "}
+          <i className="logout-sidebar-icon fa-solid fa-arrow-right-from-bracket fa-lg"></i>{" "}
           Logout
         </div>
       </header>

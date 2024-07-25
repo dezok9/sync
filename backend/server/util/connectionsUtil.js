@@ -93,10 +93,7 @@ async function getGitHubInfo(githubHandle, octokit) {
   let repositoriesIndex = 0;
 
   // Looks at the 5 most recent repositories for analysis of languages and topics.
-  while (
-    repositoriesIndex < repositories.length &&
-    repositoriesIndex < ANALYZE_REPOS
-  ) {
+  while (repositoriesIndex < Math.min(repositories.length, ANALYZE_REPOS)) {
     // Getting and looking through data on repository languages.
     const responseRepositoryLanguages = await octokit.request(
       "GET /repos/{owner}/{repo}/languages",

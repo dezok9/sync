@@ -4,7 +4,18 @@
   gap: 1%;
   padding: 1% 2%;
   border-radius: 10px;
+  border: 2px solid white;
 }
 .connection:hover {
   cursor: pointer;
+}
+
+.connect-button {
+  margin-right: 0px;
+  padding: 1%;
+  width: 10%;
+  height: 5%;
+  align-self: center;
+  border-radius: 10px;
+  border: none;
 }

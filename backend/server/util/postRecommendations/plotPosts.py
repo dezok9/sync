@@ -14,13 +14,13 @@ x_vals = []
 y_vals = []
 
 ## Convert string of post information to Python list.
-postInfo = eval(sys.argv[1])
-allTags = eval(sys.argv[2])
+post_info = eval(sys.argv[1])
+all_tags = eval(sys.argv[2])
 
-tagUses = sum(allTags.values())
+tag_uses = sum(all_tags.values())
 
 
-def valueTransformation(x):
+def value_transformation(x):
     """Transforms a non-negative integer to a value between 0 to 1.
     Uses the function y = -(1/(x + 1)) + 1."""
 
@@ -30,143 +30,148 @@ def valueTransformation(x):
     return (-1 * (1 / (float(x) + 1))) + 1
 
 
-def calculateAverageCommentLength(comments):
+def calculate_average_comment_length(comments):
     """Gets the average length of a collection of comments."""
-    totalCharacterCount = 0
+    total_character_count = 0
 
     for comment in comments:
-        totalCharacterCount += len(comment["commentText"])
+        total_character_count += len(comment["commentText"])
 
     return (
-        0 if len(comments) == 0 else float(totalCharacterCount) / float(len(comments))
+        0 if len(comments) == 0 else float(total_character_count) / float(len(comments))
     )
 
 
-def postToPoint(postInfo):
+def post_to_point(post_info):
     """Converts post information to a plot point, (x, y).
     Factors in characterists of a post, such as post engagement and post quality.
     Also used to replot posts when some interactions with post occur."""
 
     ## Calculating x-value for the post.
     ## Is calculated based on interactons with the post, such as the number of "comments" for the posts, the average length of these "comments", how many shares a post has, and information about the post's author.
-    commentCount = len(postInfo["comments"])
-    averageCommentLength = calculateAverageCommentLength(postInfo["comments"])
+    comment_count = len(post_info["comments"])
+    average_comment_length = calculate_average_comment_length(post_info["comments"])
 
-    commentInteractionScoring = (
-        valueTransformation(commentCount) + valueTransformation(averageCommentLength)
+    comment_interaction_scoring = (
+        value_transformation(comment_count)
+        + value_transformation(average_comment_length)
     ) * 10
 
     x_val = (
-        commentInteractionScoring
-        + postInfo["resharesCount"]
-        + (postInfo["upvoteCount"] / 2)
+        comment_interaction_scoring
+        + post_info["resharesCount"]
+        + (post_info["upvoteCount"] / 2)
     )
 
     ## Calculating y-value for the post.
     ## Is calculated based on post content.
-    postTextLength = len(postInfo["text"])
-    strippedpostText = postInfo["text"].replace(" ", "")
+    post_text_length = len(post_info["text"])
+    stripped_post_text = post_info["text"].replace(" ", "")
 
-    questionMarkCount = postInfo["text"].count("?")
-    periodCount = postInfo["text"].count(".")
-    exclamationPointCount = postInfo["text"].count("!")
+    question_mark_count = post_info["text"].count("?")
+    period_count = post_info["text"].count(".")
+    exclamation_point_count = post_info["text"].count("!")
 
-    inquisitiveScore = 0
-    informativeScore = 0
-    creativityScore = 0
+    inquisitive_score = 0
+    informative_score = 0
+    creativity_score = 0
 
-    if postTextLength > 0:
-        inquisitiveScore = (
-            valueTransformation(float(questionMarkCount) / float(len(strippedpostText)))
+    if post_text_length > 0:
+        inquisitive_score = (
+            value_transformation(
+                float(question_mark_count) / float(len(stripped_post_text))
+            )
             * 100.00
         )
-        informativeScore = (
-            valueTransformation(float(periodCount) / float(len(strippedpostText)))
+        informative_score = (
+            value_transformation(float(period_count) / float(len(stripped_post_text)))
             * 100.00
         )
-        creativityScore = (
-            valueTransformation(
-                ((float(questionMarkCount) + float(periodCount)) / 2)
-                / float(len(strippedpostText))
+        creativity_score = (
+            value_transformation(
+                ((float(question_mark_count) + float(period_count)) / 2)
+                / float(len(stripped_post_text))
             )
             * 100.00
         )
 
-    postLengthScoring = 0
+    post_length_scoring = 0
     long_post = False
 
     ## Post recieves full points if within range of the ideal character length for short or long posts.
     if (
-        postTextLength > LONG_POST_LOWER_LIMIT
-        and postTextLength < LONG_POST_UPPER_LIMIT
+        post_text_length > LONG_POST_LOWER_LIMIT
+        and post_text_length < LONG_POST_UPPER_LIMIT
     ):
         long_post = True
-        postLengthScoring = 10
+        post_length_scoring = 10
     elif (
-        postTextLength > SHORT_POST_LOWER_LIMIT
-        and postTextLength < SHORT_POST_UPPER_LIMIT
+        post_text_length > SHORT_POST_LOWER_LIMIT
+        and post_text_length < SHORT_POST_UPPER_LIMIT
     ):
-        postLengthScoring = 10
+        post_length_scoring = 10
     else:
-        shortLowerLimitScoring = 10.0 - (
-            (abs(SHORT_POST_LOWER_LIMIT - postTextLength) / SHORT_POST_LOWER_LIMIT)
+        short_lower_limit_scoring = 10.0 - (
+            (abs(SHORT_POST_LOWER_LIMIT - post_text_length) / SHORT_POST_LOWER_LIMIT)
             * 10.0
         )
-        shortUpperLimitScoring = 10.0 - (
-            (abs(SHORT_POST_UPPER_LIMIT - postTextLength) / SHORT_POST_UPPER_LIMIT)
+        short_upper_limit_scoring = 10.0 - (
+            (abs(SHORT_POST_UPPER_LIMIT - post_text_length) / SHORT_POST_UPPER_LIMIT)
             * 10.0
         )
-        longLowerLimitScoring = 10.0 - (
-            (abs(LONG_POST_LOWER_LIMIT - postTextLength) / LONG_POST_LOWER_LIMIT) * 10.0
+        long_lower_limit_scoring = 10.0 - (
+            (abs(LONG_POST_LOWER_LIMIT - post_text_length) / LONG_POST_LOWER_LIMIT)
+            * 10.0
         )
-        longUpperLimitScoring = 10.0 - (
-            (abs(LONG_POST_UPPER_LIMIT - postTextLength) / LONG_POST_UPPER_LIMIT) * 10.0
+        long_upper_limit_scoring = 10.0 - (
+            (abs(LONG_POST_UPPER_LIMIT - post_text_length) / LONG_POST_UPPER_LIMIT)
+            * 10.0
         )
 
-        if longLowerLimitScoring > shortUpperLimitScoring:
+        if long_lower_limit_scoring > short_upper_limit_scoring:
             ## Classifies as a long post if closer to the long posts character length.
             long_post = True
 
-        postLengthScoring = max(
-            shortLowerLimitScoring,
-            shortUpperLimitScoring,
-            longLowerLimitScoring,
-            longUpperLimitScoring,
+        post_length_scoring = max(
+            short_lower_limit_scoring,
+            short_upper_limit_scoring,
+            long_lower_limit_scoring,
+            long_upper_limit_scoring,
         )
 
     tag_scoring = 0
 
-    for tag in postInfo["tags"]:
-        tag_scoring += (allTags[tag] / tagUses) * 10
+    for tag in post_info["tags"]:
+        tag_scoring += (all_tags[tag] / tag_uses) * 10
 
     y_val = (
         tag_scoring
-        + postLengthScoring
-        + inquisitiveScore
-        + informativeScore
-        + creativityScore
+        + post_length_scoring
+        + inquisitive_score
+        + informative_score
+        + creativity_score
     )
 
     x_vals.append(x_val)
     y_vals.append(y_val)
 
-    postID = str(postInfo["id"])
-    plot_points[postID] = [x_val, y_val]
+    post_id = str(post_info["id"])
+    plot_points[post_id] = [x_val, y_val]
 
     return [x_val, y_val]
 
 
-def plotRecommendations(posts):
+def plot_recommendations(posts):
     """Plots all posts on a single graph.
     Post are recieved as an array of dictionaries.
     Called upon starting the server.
     """
 
     for post in posts:
-        postPlot = postToPoint(post)
+        post_plot = post_to_point(post)
 
     ## Printing to send the output back to the JS server.
     print(plot_points)
 
 
-plotRecommendations(postInfo)
+plot_recommendations(post_info)

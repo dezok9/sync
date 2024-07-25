@@ -4,6 +4,94 @@ const DATABASE = import.meta.env.VITE_DATABASE_ACCESS;
 const WEB_ADDRESS = import.meta.env.VITE_WEB_ADDRESS;
 
 /***
+ * Generates and returns the current date and time.
+ */
+export function generateDateTimestamp() {
+  // Generate date and timestamp.
+  const dateObject = new Date();
+
+  const month = dateObject.getMonth();
+  const day = dateObject.getDate();
+  const year = dateObject.getFullYear();
+
+  const hours = dateObject.getHours();
+  const minutes = dateObject.getMinutes();
+
+  const date = [MONTHS[month], day + ",", year].join(" ");
+
+  let timestamp = [
+    hours % 12 === 0 ? "12" : hours % 12,
+    minutes.toString().length === 1 ? "0" + minutes : minutes,
+  ].join(":");
+  timestamp = timestamp + (hours <= 12 ? "AM" : "PM");
+
+  return { date: date, timestamp: timestamp };
+}
+
+/***
+ * Calculates how long ago a post was made.
+ */
+export function deriveTimeSincePost(postDate, postTimestamp) {
+  if (!postDate || postTimestamp) {
+    return;
+  }
+
+  const currentDateTime = generateDateTimestamp();
+  const splitPostDate = postDate.split(" ");
+  const splitCurrentDate = currentDateTime.date.split(" ");
+
+  // If post was made today.
+  if (currentDateTime.date === postDate) {
+    // If post was made in the last hour.
+    const currentHour = currentDateTime.timestamp.split(":")[0];
+    const currentMinute = currentDateTime.timestamp.split(":")[1].slice(0, 3);
+    const currentDayTime = currentDateTime.timestamp.slice(
+      currentDateTime.timestamp.length - 3
+    );
+
+    const postHour = postTimestamp.split(":")[0];
+    const postMinute = postTimestamp.split(":")[1].slice(0, 3);
+    const postDayTime = postTimestamp.slice(postTimestamp.length - 3);
+
+    if (currentHour === postHour && currentDayTime === postDayTime) {
+      const minuteDiffernce = Number(currentMinute) - Number(postMinute);
+      if (minuteDiffernce === 0) {
+        return "now";
+      } else {
+        return `${minuteDiffernce} minutes ago`;
+      }
+    }
+  }
+  // If month and year are the same.
+  else if (
+    splitCurrentDate[0] === splitPostDate[0] &&
+    splitCurrentDate[splitCurrentDate.length - 1] ===
+      splitPostDate[splitPostDate.length - 1]
+  ) {
+    const dayDiffernece =
+      Number(splitCurrentDate[1].replace(",", "")) -
+      Number(splitPostDate[1].replace(",", ""));
+    return `${dayDiffernece} days ago`;
+  }
+  // If year is different.
+  else if (
+    splitCurrentDate[splitCurrentDate.length - 1] !=
+    splitPostDate[splitPostDate.length - 1]
+  ) {
+    const yearDifference =
+      Number(splitCurrentDate[splitCurrentDate.length - 1]) -
+      Number(splitPostDate[splitPostDate.length - 1]);
+    return `${yearDifference} years ago`;
+  }
+  // If only month is different.
+  else {
+    const monthDiffernce =
+      MONTHS.indexOf(splitCurrentDate[0]) - MONTHS.indexOf(splitPostDate[0]);
+    return `${monthDiffernce} months ago`;
+  }
+}
+
+/***
  * Gets the user feed data given the ID of the user.
  */
 export async function getFeed(userID) {
@@ -184,92 +272,4 @@ export async function getComments(postID) {
 
     return postComments;
   } catch {}
-}
-
-/***
- * Generates and returns the current date and time.
- */
-export function generateDateTimestamp() {
-  // Generate date and timestamp.
-  const dateObject = new Date();
-
-  const month = dateObject.getMonth();
-  const day = dateObject.getDate();
-  const year = dateObject.getFullYear();
-
-  const hours = dateObject.getHours();
-  const minutes = dateObject.getMinutes();
-
-  const date = [MONTHS[month], day + ",", year].join(" ");
-
-  let timestamp = [
-    hours % 12 === 0 ? "12" : hours % 12,
-    minutes.toString().length === 1 ? "0" + minutes : minutes,
-  ].join(":");
-  timestamp = timestamp + (hours <= 12 ? "AM" : "PM");
-
-  return { date: date, timestamp: timestamp };
-}
-
-/***
- * Calculates how long ago a post was made.
- */
-export function deriveTimeSincePost(postDate, postTimestamp) {
-  if (!postDate || postTimestamp) {
-    return;
-  }
-
-  const currentDateTime = generateDateTimestamp();
-  const splitPostDate = postDate.split(" ");
-  const splitCurrentDate = currentDateTime.date.split(" ");
-
-  // If post was made today.
-  if (currentDateTime.date === postDate) {
-    // If post was made in the last hour.
-    const currentHour = currentDateTime.timestamp.split(":")[0];
-    const currentMinute = currentDateTime.timestamp.split(":")[1].slice(0, 3);
-    const currentDayTime = currentDateTime.timestamp.slice(
-      currentDateTime.timestamp.length - 3
-    );
-
-    const postHour = postTimestamp.split(":")[0];
-    const postMinute = postTimestamp.split(":")[1].slice(0, 3);
-    const postDayTime = postTimestamp.slice(postTimestamp.length - 3);
-
-    if (currentHour === postHour && currentDayTime === postDayTime) {
-      const minuteDiffernce = Number(currentMinute) - Number(postMinute);
-      if (minuteDiffernce === 0) {
-        return "now";
-      } else {
-        return `${minuteDiffernce} minutes ago`;
-      }
-    }
-  }
-  // If month and year are the same.
-  else if (
-    splitCurrentDate[0] === splitPostDate[0] &&
-    splitCurrentDate[splitCurrentDate.length - 1] ===
-      splitPostDate[splitPostDate.length - 1]
-  ) {
-    const dayDiffernece =
-      Number(splitCurrentDate[1].replace(",", "")) -
-      Number(splitPostDate[1].replace(",", ""));
-    return `${dayDiffernece} days ago`;
-  }
-  // If year is different.
-  else if (
-    splitCurrentDate[splitCurrentDate.length - 1] !=
-    splitPostDate[splitPostDate.length - 1]
-  ) {
-    const yearDifference =
-      Number(splitCurrentDate[splitCurrentDate.length - 1]) -
-      Number(splitPostDate[splitPostDate.length - 1]);
-    return `${yearDifference} years ago`;
-  }
-  // If only month is different.
-  else {
-    const monthDiffernce =
-      MONTHS.indexOf(splitCurrentDate[0]) - MONTHS.indexOf(splitPostDate[0]);
-    return `${monthDiffernce} months ago`;
-  }
 }

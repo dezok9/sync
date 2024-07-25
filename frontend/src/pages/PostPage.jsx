@@ -12,8 +12,8 @@ import {
   renderProfilePicture,
   renderTLDR,
 } from "./util/html";
+import { createInteraction } from "./util/interactions";
 import { USER } from "./util/enums";
-import { CODE_OPENER } from "./util/enums";
 
 import "./stylesheets/PostPage.css";
 import LoadingPage from "./LoadingPage";
@@ -24,12 +24,17 @@ const postURL = window.location.href.split("/");
 const postID = postURL[postURL.length - 1];
 
 function Post() {
-  const [isLoading, setIsLoading] = useState(true);
   const [cookies, setCookies, removeCookies] = useCookies([USER]);
+
+  // Use states for comments.
+  const [isLoading, setIsLoading] = useState(true);
   const [postData, setPostData] = useState({});
   const [commentData, setCommentData] = useState([]);
   const [postAuthorData, setPostAuthorData] = useState([]);
   const [commentText, setCommentText] = useState("");
+
+  const { date, timestamp } = generateDateTimestamp();
+  let timer = 0; // Amount of time the user has spent on the post page in seconds
 
   /***
    * Helper function for commenting on a post.
@@ -54,6 +59,36 @@ function Post() {
    */
   function handleCommentChange(event) {
     setCommentText(event.target.value);
+  }
+
+  /***
+   * Updates the amount of time a user spends interacting with a post by adding a second to the timer.
+   */
+  function updateTimer() {
+    if (document.visibilityState === "visible") {
+      timer = timer + 1;
+    }
+  }
+
+  /***
+   * Logs an interaction.
+   * Called when the user just before the user navigates away from the page.
+   */
+  function logInteraction() {
+    if (cookies.user.id !== postAuthorData.id) {
+      const interactionInfo = {
+        interactionDuration: timer,
+        date: date,
+        timestamp: timestamp,
+        viewedProfile: false,
+        viewedPost: true,
+        postID: Number(postID),
+        interactingUserID: cookies.user.id,
+        targetUserID: postAuthorData.id,
+      };
+
+      createInteraction(interactionInfo);
+    }
   }
 
   /***
@@ -101,6 +136,12 @@ function Post() {
     loadData();
     setIsLoading(false);
   }, [cookies]);
+
+  setInterval(() => {
+    updateTimer();
+  }, 1000);
+
+  window.onbeforeunload = logInteraction; // Calls logInteraction() before navigating away from page.
 
   if (isLoading) {
     return <>{<LoadingPage />}</>;
