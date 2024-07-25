@@ -148,7 +148,6 @@ function Post() {
   } else {
     return (
       <div className="post">
-        <button onClick={logInteraction}>Interact</button>
         <div>{renderProfilePicture(postAuthorData.profilePicture)}</div>
         <h3>
           {postAuthorData.firstName} {postAuthorData.lastName}

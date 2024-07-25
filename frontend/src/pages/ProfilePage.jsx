@@ -190,7 +190,6 @@ function ProfilePage() {
   } else {
     return (
       <>
-        <button onClick={logInteraction}>Interact</button>
         <div className="profile-page">
           <section className="user-info">
             <div>
