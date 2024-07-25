@@ -118,6 +118,31 @@ function HomePage() {
     handleModalView();
   }
 
+  /***
+   * Toggles between two feeds.
+   */
+  function toggleFeeds(event) {
+    if (event.target.className.includes("recommended")) {
+      setFeedType(true);
+    } else {
+      setFeedType(false);
+    }
+  }
+
+  function renderRecommendedFeed() {
+    if (recommendedFeedData.length > 0) {
+      return recommendedFeedData.map((recommendedPostData) => (
+        <Post key={recommendedPostData.id} postInfo={recommendedPostData} />
+      ));
+    } else {
+      return (
+        <>
+          <p>Connect with users to recieve more relevant recommended posts</p>
+        </>
+      );
+    }
+  }
+
   // Retrieve data upon page reload & cookies change.
   useEffect(() => {
     async function loadData() {
@@ -150,8 +175,13 @@ function HomePage() {
         {/* Homepage */}
         <div className="homepage">
           {/* Home Feed */}
-          <h1 className="home-tab-header">Home</h1>
-          <div className="feed">
+          <h1
+            className="home-tab-header header"
+            onClick={(event) => toggleFeeds(event)}
+          >
+            Home
+          </h1>
+          <div className={"feed " + (feedType ? "hide" : "show")}>
             <div className="home-page page">
               <section className="posts">
                 {homeFeedData.map((postData) => (
@@ -217,24 +247,21 @@ function HomePage() {
               <button onClick={handlePost}>Post</button>
             </div>
           </div>
-
           {/* Recommended Feed */}
-          <h1 className="recommended-tab-header">Recommended</h1>
-          <div className="feed" style={{ display: "none" }}>
+
+          <h1
+            className="recommended-tab-header header"
+            onClick={(event) => toggleFeeds(event)}
+          >
+            Recommended
+          </h1>
+          <div className={"feed " + (feedType ? "show" : "hide")}>
             <div className="home-page page">
-              <section className="posts">
-                {recommendedFeedData.map((recommendedPostData) => (
-                  <Post
-                    key={recommendedPostData.id}
-                    postInfo={recommendedPostData}
-                  />
-                ))}
-              </section>
+              <section className="posts">{renderRecommendedFeed()}</section>
             </div>
           </div>
-
           {/* Recommended connections sidebar */}
-          <div className="recommended-connections sidebar"></div>
+          <div className="recommended-connections"></div>
         </div>
       </>
     );

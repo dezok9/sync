@@ -40,6 +40,8 @@ async function plotPosts(allTags, postID) {
     posts = await prisma.post.findMany();
   }
 
+  let allPostsInfo = posts;
+
   for (const postIndex in posts) {
     const comments = await prisma.comment.findMany({
       where: { postID: posts[postIndex].id },
@@ -53,7 +55,7 @@ async function plotPosts(allTags, postID) {
       where: { userUpvoteID: posts[postIndex].id },
     });
 
-    posts[postIndex] = {
+    allPostsInfo[postIndex] = {
       ...posts[postIndex],
       comments: comments,
       resharesCount: resharesCount,
@@ -62,7 +64,7 @@ async function plotPosts(allTags, postID) {
   }
 
   // Convert post information to Python.
-  const pyAllPostInfo = JSON.stringify(posts)
+  const pyAllPostInfo = JSON.stringify(allPostsInfo)
     .replaceAll('"', "'")
     .replaceAll("false", "False")
     .replaceAll("true", "True")

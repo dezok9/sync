@@ -108,6 +108,6 @@ export async function getRecommendedUsers(userID, numberOfRecs) {
       userRecommendations = userRecommendations.concat(recommendationUserData);
     }
 
-    return user;
+    return userRecommendations;
   } catch {}
 }

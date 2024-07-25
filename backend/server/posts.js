@@ -188,9 +188,9 @@ module.exports = async function (
       },
     });
 
-    postData = { ...postData, comments: comments };
+    allPostData = { ...postData, comments: comments };
 
-    res.status(200).json(postData);
+    res.status(200).json(allPostData);
   });
 
   /***

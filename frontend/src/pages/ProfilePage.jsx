@@ -1,5 +1,5 @@
 import { useCookies } from "react-cookie";
-import { getUserData, getUserPosts } from "./util/posts";
+import { getUserData, getUserPosts, generateDateTimestamp } from "./util/posts";
 import {
   addConnection,
   getConnectionStatus,
@@ -7,6 +7,7 @@ import {
   requestConnection,
 } from "./util/connections";
 import { useState, useEffect } from "react";
+import { createInteraction } from "./util/interactions";
 import { useNavigate } from "react-router-dom";
 import Post from "../components/Post";
 import FeaturedProject from "../components/FeaturedProject";
@@ -29,6 +30,9 @@ function ProfilePage() {
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { date, timestamp } = generateDateTimestamp();
+  let timer = 0; // Amount of time the user has spent on the profile page in seconds
 
   /***
    * Retrieves the profile picture from the database information.
@@ -121,6 +125,36 @@ function ProfilePage() {
     }
   }
 
+  /***
+   * Updates the amount of time a user spends interacting with a post by adding a second to the timer.
+   */
+  function updateTimer() {
+    if (document.visibilityState === "visible") {
+      timer = timer + 1;
+    }
+  }
+
+  /***
+   * Logs an interaction.
+   * Called when the user just before the user navigates away from the page.
+   */
+  function logInteraction() {
+    if (cookies.user.id !== profileUserData.id) {
+      const interactionInfo = {
+        interactionDuration: timer,
+        date: date,
+        timestamp: timestamp,
+        viewedProfile: true,
+        viewedPost: false,
+        postID: null,
+        interactingUserID: cookies.user.id,
+        targetUserID: profileUserData.id,
+      };
+
+      createInteraction(interactionInfo);
+    }
+  }
+
   // Retrieve data upon page reload & cookies change.
   useEffect(() => {
     async function loadData() {
@@ -145,11 +179,18 @@ function ProfilePage() {
     setIsLoading(setIsLoading(false));
   }, [cookies, connectionStatus]);
 
+  setInterval(() => {
+    updateTimer();
+  }, 1000);
+
+  window.onbeforeunload = logInteraction; // Calls logInteraction() before navigating away from page.
+
   if (isLoading) {
     return <LoadingPage />;
   } else {
     return (
       <>
+        <button onClick={logInteraction}>Interact</button>
         <div className="profile-page">
           <section className="user-info">
             <div>

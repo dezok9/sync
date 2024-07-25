@@ -12,14 +12,14 @@ SIMILARITY_POINTS_RANGE = (
 )
 
 ## Convert strings to Python.
-userData = eval(sys.argv[1])
-postPoints = eval(
+user_data = eval(sys.argv[1])
+post_points = eval(
     sys.argv[2]
 )  ## Dictionary of graphical represenation of posts, where the key is the id of a post and the value is a list of size two representing the posts x and y values.
-numberOfRecs = eval(sys.argv[3])
+number_of_recs = eval(sys.argv[3])
 
 
-def getDistance(point_one, point_two):
+def get_distance(point_one, point_two):
     """Gets the Euclidian distance between two points."""
     return math.sqrt(
         (math.pow(point_one[0] - point_two[0], 2))
@@ -27,62 +27,68 @@ def getDistance(point_one, point_two):
     )
 
 
-def userInteractionsToPoint():
+def user_interactions_to_point():
     """Uses recent user post interactions to produce a point on the graph, (x, y)"""
     sum_of_x_values = 0
     sum_of_y_values = 0
-    for recentUpvotedPostsID in userData["recentUpvotedPostsIDs"]:
-        sum_of_x_values += postPoints[str(recentUpvotedPostsID)][0]
-        sum_of_y_values += postPoints[str(recentUpvotedPostsID)][1]
+    for recent_upvotedPostsID in user_data["recentUpvotedPostsIDs"]:
+        sum_of_x_values += post_points[str(recent_upvoted_posts_id)][0]
+        sum_of_y_values += post_points[str(recent_upvoted_posts_id)][1]
 
-    x_val = float(sum_of_x_values) / float(len(userData["recentUpvotedPostsIDs"]))
-    y_val = float(sum_of_y_values) / float(len(userData["recentUpvotedPostsIDs"]))
+    x_val = float(sum_of_x_values) / float(len(user_data["recentUpvotedPostsIDs"]))
+    y_val = float(sum_of_y_values) / float(len(user_data["recentUpvotedPostsIDs"]))
 
     return [x_val, y_val]
 
 
-def getSimilarPosts(userData, postPoints, numberOfRecs):
+def get_similar_posts(user_data, post_points, number_of_recs):
     """
     Gets the similar recommendations of posts, where similarity is defined as being close on a graph.
     First, gets all posts that are close to the user's plot before determining if the user as already interacted with that post.
     Returns the IDs of posts that are a short distance away from the user's plot. This will then be used to determine relevant posts.
     """
-    similarPostIDs = []
-    currentSearchRange = SIMILARITY_POINTS_RANGE
-    similarPostsPool = (
-        (len(postPoints) * MAX_SIMILAR_POSTS_PERCENT)
-        if (len(postPoints) * MAX_SIMILAR_POSTS_PERCENT) < MAX_SIMILAR_POSTS_POOL
+    similar_post_ids = []
+    current_search_range = SIMILARITY_POINTS_RANGE
+    similar_posts_pool = (
+        (len(post_points) * MAX_SIMILAR_POSTS_PERCENT)
+        if (len(post_points) * MAX_SIMILAR_POSTS_PERCENT) < MAX_SIMILAR_POSTS_POOL
         else MAX_SIMILAR_POSTS_POOL
     )  ## Upper limit of how many posts to get for initial comparison.
 
-    userPoint = userInteractionsToPoint()
+    userPoint = user_interactions_to_point()
 
     ## Gets a pool of similar posts (those that are close to the plot of the user's interaction)
     ## Retrieves 20% of posts on the platform OR fifty, whichever is smaller. Done to cap the number of posts being looked over.
-    while len(similarPostIDs) < similarPostsPool:
-        max_distance = getDistance(
-            userPoint,
-            [userPoint[0] + currentSearchRange, userPoint[1] + currentSearchRange],
+    while len(similar_post_ids) < similar_posts_pool:
+        max_distance = get_distance(
+            user_point,
+            [
+                user_point[0] + current_search_range,
+                user_point[1] + current_search_range,
+            ],
         )
 
-        for postID in postPoints.keys():
-            if postID in userData["recentUpvotedPostsIDs"] or postID in similarPostIDs:
+        for post_id in post_points.keys():
+            if (
+                post_id in user_data["recentUpvotedPostsIDs"]
+                or post_id in similar_post_ids
+            ):
                 ## If the user has already interacted with this post OR it has already been flagged as a similar post
                 continue
             elif (
-                getDistance(userPoint, postPoints[postID]) < max_distance
-                and len(similarPostIDs) < similarPostsPool
+                get_distance(user_point, post_points[post_id]) < max_distance
+                and len(similar_post_ids) < similar_posts_pool
             ):
-                similarPostIDs.append(int(postID))
-            elif len(similarPostIDs) >= similarPostsPool:
+                similar_post_ids.append(int(post_id))
+            elif len(similar_post_ids) >= similar_posts_pool:
                 break
 
-        currentSearchRange += SIMILARITY_POINTS_RANGE
+        current_search_range += SIMILARITY_POINTS_RANGE
 
     ## Printing to send the output back to the JS server.
-    print(similarPostIDs)
+    print(similar_post_ids)
 
-    return similarPostIDs
+    return similar_post_ids
 
 
-getSimilarPosts(userData, postPoints, numberOfRecs)
+get_similar_posts(user_data, post_points, number_of_recs)

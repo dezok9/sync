@@ -17,13 +17,21 @@ function ConnectionsPage() {
   useEffect(() => {
     async function loadData() {
       const loadedUserConnectionsData = await getConnections(cookies.user.id);
-      await setUserConnectionsData(loadedUserConnectionsData);
+      await setUserConnectionsData(
+        loadedUserConnectionsData.map((connectionsData) => {
+          return { ...connectionsData, connected: true };
+        })
+      );
 
       const loadedRecommendedUsersData = await getRecommendedUsers(
         cookies.user.id,
         NUMBER_OF_RECOMMENDATIONS
       );
-      await setRecommendedUsersData(loadedRecommendedUsersData);
+      await setRecommendedUsersData(
+        loadedRecommendedUsersData.map((connectionsData) => {
+          return { ...connectionsData, connected: false };
+        })
+      );
     }
 
     loadData();
@@ -31,11 +39,7 @@ function ConnectionsPage() {
   }, [cookies]);
 
   if (isLoading) {
-    return (
-      <div>
-        <LoadingPage />
-      </div>
-    );
+    return <LoadingPage />;
   } else {
     return (
       <div>

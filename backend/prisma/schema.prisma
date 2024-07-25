@@ -52,16 +52,13 @@ model Connection {
 model Interaction {
   id                  Int           @id @default(autoincrement())
   interactionDuration Int
-
+  date                String
+  timestamp           String
   viewedProfile       Boolean       @default(false)
 
   viewedPost          Boolean       @default(false)
-  postID              Int
+  postID              Int?
   post                Post?         @relation(fields: [postID], references: [id], name: "post interaction")
-
-  commented           Boolean       @default(false)
-  commentID           Int
-  comment             Comment?      @relation(fields: [commentID], references: [id], name: "comment interaction")
 
   interactingUserID   Int
   interactingUser     User          @relation(fields: [interactingUserID], references: [id], name: "interacting user")
@@ -120,8 +117,6 @@ model Comment {
 
   authorID            Int
   author              User          @relation(fields: [authorID], references: [id], onDelete: Cascade)
-
-  commentInteraction  Interaction[] @relation(name: "comment interaction")
 }
 
 model Chat {
