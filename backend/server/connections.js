@@ -12,9 +12,11 @@ module.exports = async function (app, connectionsGraph) {
     RECOMMENDER_PROFILE_SIMILARITY_POINTS,
     RECENCY_POINTS,
     SEED_RECENT_CONNECTIONS,
+    MAX_RECOMMENDATIONS,
     createGraph,
     compareGitHubs,
     getSyncProfileSimilarityScore,
+    getPopularityRecommendations,
   } = require("./util/connectionsUtil");
 
   connectionsGraph = await createGraph();
@@ -237,17 +239,21 @@ module.exports = async function (app, connectionsGraph) {
     async (req, res) => {
       const userID = req.params.userID;
       const numberOfRecs =
-        req.params.numberOfRecs > 5 ? 5 : req.params.numberOfRecs; // Sets max number of recs at one time to be 5 due to the number of GitHub request calls.
+        req.params.numberOfRecs > MAX_RECOMMENDATIONS
+          ? MAX_RECOMMENDATIONS
+          : req.params.numberOfRecs; // Sets max number of recs at one time to be 5 due to the number of GitHub request calls.
+
+      const userData = await prisma.user.findUnique({
+        where: { id: Number(userID) },
+      });
+
+      const octokit = await createOctokit(userData.githubHandle);
 
       const userConnectionsIDs = connectionsGraph[userID];
 
-      const recommendations = [];
+      let recommendations = [];
 
       if (userConnectionsIDs.length > 0) {
-        const userData = await prisma.user.findUnique({
-          where: { id: Number(userID) },
-        });
-
         // Gets "weighted" recommendations based on how many connections the user and their connections have in common.
         // The first n (numberOfRecs) are then returned.
         // More connections are looked through if enough recommendations have not been generated and the user still has connections to use to generate related connections.
@@ -318,8 +324,6 @@ module.exports = async function (app, connectionsGraph) {
               },
             });
 
-            const octokit = await createOctokit(userData.githubHandle);
-
             // Calculates weights for recommendations if user is not connected with adjacent connection and has not requested a connection with that user.
             if (connected.length === 0) {
               const connectedUserRecommendationScore =
@@ -359,7 +363,7 @@ module.exports = async function (app, connectionsGraph) {
             }
           }
 
-          // Gets the most highly relevant adjacent connections seen most frequently using the weighted connections values.
+          // Gets the most highly relevant adjacent connections using the weighted connections values.
           while (
             recommendations.length < numberOfRecs &&
             Object.keys(weightedRecommendations).length > 0
@@ -398,6 +402,21 @@ module.exports = async function (app, connectionsGraph) {
             break;
           }
         }
+      }
+
+      if (recommendations.length < numberOfRecs) {
+        const popularityRecommendations = await getPopularityRecommendations(
+          userData,
+          connectionsGraph,
+          octokit
+        );
+
+        recommendations = recommendations.concat(
+          popularityRecommendations.splice(
+            0,
+            numberOfRecs - recommendations.length
+          )
+        );
       }
 
       res.status(200).json(recommendations);
