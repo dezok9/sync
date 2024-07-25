@@ -13,6 +13,7 @@
   --blue-grey: rgba(43, 49, 55, 1);
   --near-black: rgba(39, 39, 39, 1);
   --off-white: rgba(255, 252, 247, 1);
+  --purple-accent: rgba(144, 65, 228, 0.8);
 }
 
 body {
@@ -26,14 +27,13 @@ body {
   flex-direction: column;
   height: 100vh;
 
-  align-items: center;
-  justify-content: center;
   gap: 4%;
 }
 
 .page {
-  margin: 1% 8% 1% 18%;
-  min-height: 100%;
+  margin-top: 8%;
+  margin-left: 21%;
+  min-height: 100vh;
   height: 100vh;
 }
 
@@ -56,4 +56,11 @@ body {
 .input-section {
   width: 30%;
   height: 10%;
+}
+
+.submit-button {
+  width: 20%;
+  height: 5%;
+  border-radius: 5px;
+  border: none;
 }

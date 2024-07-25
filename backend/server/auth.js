@@ -8,8 +8,6 @@ module.exports = function (app, connectionsGraph) {
   const expressValidator = require("express-validator");
   const bycrypt = require("bcrypt");
 
-  const { createOctokit } = require("./util/githubUtil");
-
   const SALT_ROUNDS = 14;
 
   /***

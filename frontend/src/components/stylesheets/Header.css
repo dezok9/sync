@@ -2,17 +2,30 @@
   --deep-purple: rgba(15, 5, 41, 1);
 }
 
-.sidebar {
+.nav-bar {
   position: absolute;
+  width: 90%;
+  margin-left: 10%;
+  height: 10%;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  top: 0;
+  left: 0;
+  background-color: rgb(18, 18, 18);
+  z-index: -1;
+}
+
+.sidebar {
+  position: fixed;
   display: flex;
   flex-direction: column;
-  top: 6%;
+  top: 0%;
   left: 0%;
   padding: 2% 4% 2% 2%;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
+  background-color: rgba(18, 18, 18);
   overflow: hidden;
-  width: 6%;
+  width: 10%;
+  height: 100%;
+  border-right: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .sync-logo {
@@ -34,17 +47,22 @@
 }
 
 .home-sidebar-icon {
-  margin-right: 20%;
+  margin-right: 10%;
 }
 
 .profile-sidebar-icon {
-  margin-right: 24%;
+  margin-right: 15%;
 }
 
 .connections-sidebar-icon {
-  margin-right: 16%;
+  margin-right: 10%;
+}
+
+.divider {
+  height: 0;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .logout-sidebar-icon {
-  margin-right: 21%;
+  margin-right: 11%;
 }

@@ -6,6 +6,8 @@ import { USER } from "./util/enums";
 import LoadingPage from "./LoadingPage";
 import Connection from "../components/Connection";
 
+import "./stylesheets/ConnectionsPage.css";
+
 const NUMBER_OF_RECOMMENDATIONS = 5;
 
 function ConnectionsPage() {
@@ -42,8 +44,8 @@ function ConnectionsPage() {
     return <LoadingPage />;
   } else {
     return (
-      <div>
-        <div>
+      <div className="connections-page">
+        <div className="connections-section">
           <h1>Connections</h1>
           {userConnectionsData.map((userConnectionData) => (
             <Connection
@@ -52,8 +54,15 @@ function ConnectionsPage() {
             />
           ))}
         </div>
-        <div>
-          <h2>Recommended Connections</h2>
+        <div className="connections-section">
+          <h2>
+            Recommended Connections
+            <i className="info-circle fa-solid fa-circle-info fa-sm"></i>
+            <div className="connection-info">
+              Recommendations are based on GitHub similarity and the
+              compatablity of your Sync profiles.
+            </div>
+          </h2>
           {recommendedUsersData.map((recommendedUserData) => (
             <Connection
               key={recommendedUserData.id}
