@@ -174,9 +174,7 @@ function ProfilePage() {
       await setConnectionStatus(loadedConnectionStatus);
     }
 
-    loadData();
-
-    setIsLoading(setIsLoading(false));
+    loadData().then(() => setIsLoading(false));
   }, [cookies, connectionStatus]);
 
   setInterval(() => {

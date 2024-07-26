@@ -39,7 +39,13 @@ function Post(postInfo) {
         className="post"
         onClick={() => navigate(`/post/${postInfo.postInfo.id}`)}
       >
-        <div className="author">
+        <div
+          className="author"
+          onClick={(event) => {
+            event.stopPropagation();
+            navigate(`/profile/${postInfo.postInfo.authorData.userHandle}`);
+          }}
+        >
           {renderProfilePicture(postInfo.postInfo.authorData.profilePicture)}
           <div className="author-info">
             <h4>

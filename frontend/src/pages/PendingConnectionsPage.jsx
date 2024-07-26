@@ -20,9 +20,7 @@ function PendingConnections() {
       setPendingConnections(loadedPendingConnections);
     }
 
-    loadData();
-
-    setIsLoading(false);
+    loadData().then(() => setIsLoading(false));
   }, [cookies]);
 
   if (isLoading) {

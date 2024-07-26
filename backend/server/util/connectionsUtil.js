@@ -13,6 +13,7 @@ const RECENCY_POINTS = 5;
 const TOPIC_POINTS = 4;
 const COMMON_LANGUAGE_POINTS = 6;
 
+const MAX_RECOMMENDATIONS = 5; // Max number of recommendations to return.
 const SEED_RECENT_CONNECTIONS = 5; // Attempts to optimize time it takes to get connections while getting the most relevant recommendations.
 const ANALYZE_REPOS = 5; // Limits how many recent repositories are looked at (max) for deep analysis.
 
@@ -317,6 +318,79 @@ async function getSyncProfileSimilarityScore(
   return similarityScore;
 }
 
+/***
+ * Function to get the most popular users, and, from that pool, get those that the user is not connected to and is most similar to.
+ */
+async function getPopularityRecommendations(
+  userOneData,
+  connectionsGraph,
+  octokit
+) {
+  let weightedPopularityRecommendations = {};
+  const recommendations = [];
+
+  const userIDs = Object.keys(connectionsGraph);
+  const connectionIDs = Object.values(connectionsGraph);
+  const connectionCounts = connectionIDs.map((listOfConnections) => {
+    return listOfConnections.length;
+  });
+
+  while (
+    Object.keys(weightedPopularityRecommendations).length <
+      MAX_RECOMMENDATIONS &&
+    userIDs.length > 0
+  ) {
+    const graphIndex = connectionCounts.indexOf(
+      connectionCounts.reduce((val1, val2) => Math.max(val1, val2), -Infinity)
+    );
+
+    if (
+      !(
+        connectionsGraph[String(userOneData.id)].includes(
+          userIDs[graphIndex]
+        ) || String(userOneData.id) === userIDs[graphIndex]
+      )
+    ) {
+      const userTwoData = await prisma.user.findUnique({
+        where: { id: Number(userIDs[graphIndex]) },
+      });
+
+      const githubScore = await compareGitHubs(
+        userOneData.githubHandle,
+        userTwoData.githubHandle,
+        octokit
+      );
+
+      weightedPopularityRecommendations[userIDs[graphIndex]] = githubScore;
+    }
+
+    userIDs.splice(graphIndex, 1);
+    connectionIDs.splice(graphIndex, 1);
+    connectionCounts.splice(graphIndex, 1);
+  }
+
+  while (
+    recommendations.length < MAX_RECOMMENDATIONS &&
+    Object.keys(weightedPopularityRecommendations).length > 0
+  ) {
+    const highestRecommendationScore = Object.values(
+      weightedPopularityRecommendations
+    ).reduce((val1, val2) => Math.max(val1, val2), -Infinity);
+    const hightestRecommendedUserID = Object.keys(
+      weightedPopularityRecommendations
+    ).find(
+      (recommenedUserID) =>
+        weightedPopularityRecommendations[recommenedUserID] ===
+        highestRecommendationScore
+    );
+
+    recommendations.push(Number(hightestRecommendedUserID));
+    delete weightedPopularityRecommendations[hightestRecommendedUserID];
+  }
+
+  return recommendations;
+}
+
 module.exports = {
   GITHUB_SIMILARITY_POINTS,
   ADJACENT_PROFILE_SIMILARITY_POINTS,
@@ -332,4 +406,5 @@ module.exports = {
   compareGitHubs,
   getUserData,
   getSyncProfileSimilarityScore,
+  getPopularityRecommendations,
 };

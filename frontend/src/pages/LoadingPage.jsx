@@ -1,7 +1,14 @@
+import SyncGIF from "../../assets/SyncGif.gif";
+
+import "./stylesheets/LoadingPage.css";
+
 function LoadingPage() {
   return (
     <>
-      <div>Loading...</div>
+      <div className="loading-page">
+        <img src={SyncGIF} />
+        <p>Loading...</p>
+      </div>
     </>
   );
 }
