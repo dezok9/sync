@@ -18,21 +18,24 @@ let postGraphPoints = {};
 let allTags = {}; // All tags and their count, where keys are the tag values and the values are the number of posts using that tags.
 
 // Util files.
-const { createOctokit } = require("./util/githubUtil");
-const postsUtil = require("./util/postsUtil");
-const connectionUtil = require("./util/connectionsUtil");
+const { createGraph } = require("./util/connectionsUtil");
 
-// Endpoint files.
-const auth = require("./auth")(app, connectionsGraph);
-const github = require("./github")(app);
-const featuredProjects = require("./featuredProjects")(app);
-const connections = require("./connections")(app, connectionsGraph);
-const interactions = require("./interactions")(app);
-const posts = require("./posts")(
-  app,
-  connectionsGraph,
-  postGraphPoints,
-  allTags
-);
+// Graph creation and running server.
+createGraph()
+  .then((graph) => (connectionsGraph = graph))
+  .then(() => {
+    // Endpoint files.
+    const auth = require("./auth")(app, connectionsGraph);
+    const github = require("./github")(app);
+    const featuredProjects = require("./featuredProjects")(app);
+    const connections = require("./connections")(app, connectionsGraph);
+    const interactions = require("./interactions")(app);
+    const posts = require("./posts")(
+      app,
+      connectionsGraph,
+      postGraphPoints,
+      allTags
+    );
 
-app.listen(PORT, () => {});
+    app.listen(PORT, () => {});
+  });

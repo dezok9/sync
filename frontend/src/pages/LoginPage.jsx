@@ -73,7 +73,9 @@ function LoginPage() {
           Don't have an account?{" "}
           <button onClick={() => navigate("/sign-up")}>Sign up</button> instead.
         </p>
-        <button onClick={login}>Login</button>
+        <button className="submit-button" onClick={login}>
+          Login
+        </button>
       </section>
     </>
   );

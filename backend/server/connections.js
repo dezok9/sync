@@ -13,13 +13,10 @@ module.exports = async function (app, connectionsGraph) {
     RECENCY_POINTS,
     SEED_RECENT_CONNECTIONS,
     MAX_RECOMMENDATIONS,
-    createGraph,
     compareGitHubs,
     getSyncProfileSimilarityScore,
     getPopularityRecommendations,
   } = require("./util/connectionsUtil");
-
-  connectionsGraph = await createGraph();
 
   // Endpoints.
 

@@ -153,7 +153,9 @@ function SignUpPage() {
             account.
           </em>
         </p>
-        <button onClick={signUp}>Submit</button>
+        <button className="submit-button" onClick={signUp}>
+          Submit
+        </button>
       </section>
     </>
   );

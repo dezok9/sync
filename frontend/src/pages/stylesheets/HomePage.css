@@ -51,6 +51,24 @@
   width: 40%;
 }
 
+.post-button {
+  position: fixed;
+  top: 60%;
+  left: 2%;
+  width: 12%;
+  height: 5%;
+  color: white;
+  background-color: var(--purple-accent);
+  border-radius: 5px;
+  outline: none;
+  border: none;
+  transition-duration: 1s;
+}
+.post-button:hover {
+  cursor: pointer;
+  background-color: rgb(118, 30, 212);
+}
+
 .home-tab-header {
   position: absolute;
   left: 32%;

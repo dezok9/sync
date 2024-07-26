@@ -20,40 +20,44 @@ function Header() {
 
   if (cookies[USER]) {
     return (
-      <header className="sidebar">
-        <img src={SyncLogo} className="sync-logo"></img>
+      <>
+        <header className="sidebar">
+          <img src={SyncLogo} className="sync-logo"></img>
 
-        <div>
+          <div>
+            <p
+              className="sidebar-link"
+              onClick={() => window.location.assign(`${WEB_ADDRESS}`)}
+            >
+              <i className="home-sidebar-icon fa-solid fa-house fa-lg"></i> Home
+            </p>
+          </div>
           <p
             className="sidebar-link"
-            onClick={() => window.location.assign(`${WEB_ADDRESS}`)}
+            onClick={() =>
+              window.location.assign(
+                `${WEB_ADDRESS}/profile/${cookies.user.userHandle}`
+              )
+            }
           >
-            <i className="home-sidebar-icon fa-solid fa-house fa-lg"></i> Home
+            <i className="profile-sidebar-icon fa-solid fa-user fa-lg"></i>{" "}
+            Profile
           </p>
-        </div>
-        <p
-          className="sidebar-link"
-          onClick={() =>
-            window.location.assign(
-              `${WEB_ADDRESS}/profile/${cookies.user.userHandle}`
-            )
-          }
-        >
-          <i className="profile-sidebar-icon fa-solid fa-user fa-lg"></i>{" "}
-          Profile
-        </p>
-        <p
-          className="sidebar-link"
-          onClick={() => window.location.assign(`${WEB_ADDRESS}/connections`)}
-        >
-          <i className="connections-sidebar-icon fa-solid fa-link fa-lg"></i>{" "}
-          Connections
-        </p>
-        <div className="logout sidebar-link" onClick={() => logOut()}>
-          <i className="logout-sidebar-icon fa-solid fa-arrow-right-from-bracket fa-lg"></i>{" "}
-          Logout
-        </div>
-      </header>
+          <p
+            className="sidebar-link"
+            onClick={() => window.location.assign(`${WEB_ADDRESS}/connections`)}
+          >
+            <i className="connections-sidebar-icon fa-solid fa-link fa-lg"></i>{" "}
+            Connections
+          </p>
+          <div className="divider"></div>
+          <div className="logout sidebar-link" onClick={() => logOut()}>
+            <i className="logout-sidebar-icon fa-solid fa-arrow-right-from-bracket fa-lg"></i>{" "}
+            Logout
+          </div>
+        </header>
+        <span className="nav-bar"></span>
+      </>
     );
   } else {
     return (
