@@ -444,7 +444,7 @@ module.exports = async function (
 
         if (recentUpvotedPostsIDs.length < RECENT_POSTS_FOR_RECS) {
           recentUpvotedPostsInfo.push(postInfo);
-          recentUpvotedPostsIDs.push(upvotedPost.id);
+          recentUpvotedPostsIDs.push(upvotedPost.postID);
           for (const tag of postInfo.tags) {
             if (!tag in recentTags) {
               recentTags.push(tag);

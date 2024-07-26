@@ -61,13 +61,6 @@ function HomePage() {
   }
 
   /***
-   *  Changes between the feeds of recommended and featured.
-   */
-  function handleFeedType() {
-    setFeedType(!feedType);
-  }
-
-  /***
    *  Helper function for creating posts.
    */
   function handlePost() {
@@ -129,15 +122,49 @@ function HomePage() {
     }
   }
 
+  /***
+   * Renders the recommended feed or a placeholder.
+   */
   function renderRecommendedFeed() {
     if (recommendedFeedData.length > 0) {
-      return recommendedFeedData.map((recommendedPostData) => (
-        <Post key={recommendedPostData.id} postInfo={recommendedPostData} />
-      ));
+      return (
+        <div className="posts">
+          {recommendedFeedData.map((recommendedPostData) => (
+            <Post key={recommendedPostData.id} postInfo={recommendedPostData} />
+          ))}
+        </div>
+      );
     } else {
       return (
         <>
-          <p>Connect with users to recieve more relevant recommended posts</p>
+          <h3 className="placeholder-feed">
+            Connect with users to recieve more relevant recommended posts.
+          </h3>
+        </>
+      );
+    }
+  }
+
+  /***
+   * Returns the home feed for the homepage.
+   * Renders the home feed or a placeholder.
+   */
+  function renderHomeFeed() {
+    if (homeFeedData.length > 0) {
+      return (
+        <div className="posts">
+          {homeFeedData.map((postData) => (
+            <Post key={postData.id} postInfo={postData} />
+          ))}
+        </div>
+      );
+    } else {
+      return (
+        <>
+          <h3 className="placeholder-feed">
+            Connect with users to recieve more relevant recommended posts to add
+            to your feed.
+          </h3>
         </>
       );
     }
@@ -159,8 +186,7 @@ function HomePage() {
       await setRecommendedFeedData(loadedRecommendedFeedData);
     }
 
-    loadData();
-    setIsLoading(setIsLoading(false));
+    loadData().then(() => setIsLoading(false));
   }, [cookies]);
 
   if (isLoading) {
@@ -176,19 +202,13 @@ function HomePage() {
         <div className="homepage">
           {/* Home Feed */}
           <h1
-            className="home-tab-header header"
+            className="home-tab-header"
             onClick={(event) => toggleFeeds(event)}
           >
             Home
           </h1>
           <div className={"feed " + (feedType ? "hide" : "show")}>
-            <div className="home-page page">
-              <section className="posts">
-                {homeFeedData.map((postData) => (
-                  <Post key={postData.id} postInfo={postData} />
-                ))}
-              </section>
-            </div>
+            <section>{renderHomeFeed()}</section>
 
             {/* Post creation modal */}
             <div className={"modal " + (modalOpen ? "show" : "hide")}>
@@ -250,15 +270,13 @@ function HomePage() {
           {/* Recommended Feed */}
 
           <h1
-            className="recommended-tab-header header"
+            className="recommended-tab-header"
             onClick={(event) => toggleFeeds(event)}
           >
             Recommended
           </h1>
           <div className={"feed " + (feedType ? "show" : "hide")}>
-            <div className="home-page page">
-              <section className="posts">{renderRecommendedFeed()}</section>
-            </div>
+            <section>{renderRecommendedFeed()}</section>
           </div>
           {/* Recommended connections sidebar */}
           <div className="recommended-connections"></div>

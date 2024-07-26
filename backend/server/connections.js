@@ -411,12 +411,19 @@ module.exports = async function (app, connectionsGraph) {
           octokit
         );
 
-        recommendations = recommendations.concat(
-          popularityRecommendations.splice(
-            0,
-            numberOfRecs - recommendations.length
-          )
-        );
+        for (popularityRecommendation of popularityRecommendations) {
+          if (recommendations.length < numberOfRecs) {
+            if (!recommendations.includes(popularityRecommendation)) {
+              recommendations = recommendations.concat(
+                popularityRecommendation
+              );
+            } else {
+              continue;
+            }
+          } else {
+            break;
+          }
+        }
       }
 
       res.status(200).json(recommendations);

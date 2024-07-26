@@ -31,12 +31,39 @@ def user_interactions_to_point():
     """Uses recent user post interactions to produce a point on the graph, (x, y)"""
     sum_of_x_values = 0
     sum_of_y_values = 0
-    for recent_upvotedPostsID in user_data["recentUpvotedPostsIDs"]:
-        sum_of_x_values += post_points[str(recent_upvoted_posts_id)][0]
-        sum_of_y_values += post_points[str(recent_upvoted_posts_id)][1]
 
-    x_val = float(sum_of_x_values) / float(len(user_data["recentUpvotedPostsIDs"]))
-    y_val = float(sum_of_y_values) / float(len(user_data["recentUpvotedPostsIDs"]))
+    x_val = -1.0
+    y_val = -1.0
+
+    if len(user_data["recentUpvotedPostsIDs"]) > 0:
+        # Calculates value from past post upvotes.
+        for recent_upvoted_posts_id in user_data["recentUpvotedPostsIDs"]:
+            sum_of_x_values += post_points[str(recent_upvoted_posts_id)][0]
+            sum_of_y_values += post_points[str(recent_upvoted_posts_id)][1]
+
+        x_val = float(sum_of_x_values) / float(len(user_data["recentUpvotedPostsIDs"]))
+        y_val = float(sum_of_y_values) / float(len(user_data["recentUpvotedPostsIDs"]))
+    elif len(list(post_points.values())) > 0:
+        # Gives a default plot point.
+        x_sum = 0.0
+        y_sum = 0.0
+
+        for point in list(post_points.values()):
+            x_sum += point[0]
+            y_sum += point[1]
+
+        x_val = x_sum / float(len(list(post_points.values())))
+        y_val = y_sum / float(len(list(post_points.values())))
+    else:
+        x_val = 0
+        y_val = 0
+
+    x_values = []
+    y_values = []
+
+    for plot_point in list(post_points.values()):
+        x_values.append(plot_point[0])
+        y_values.append(plot_point[1])
 
     return [x_val, y_val]
 
@@ -55,7 +82,7 @@ def get_similar_posts(user_data, post_points, number_of_recs):
         else MAX_SIMILAR_POSTS_POOL
     )  ## Upper limit of how many posts to get for initial comparison.
 
-    userPoint = user_interactions_to_point()
+    user_point = user_interactions_to_point()
 
     ## Gets a pool of similar posts (those that are close to the plot of the user's interaction)
     ## Retrieves 20% of posts on the platform OR fifty, whichever is smaller. Done to cap the number of posts being looked over.

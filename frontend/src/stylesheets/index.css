@@ -11,7 +11,9 @@
 
 :root {
   --blue-grey: rgba(43, 49, 55, 1);
-  --near-black: rgba(39, 39, 39, 1);
+  --near-black: rgba(28, 28, 28, 1);
+  --main-blue: rgba(46, 48, 71, 1);
+  --deep-blue: rgba(16, 18, 36, 1);
   --off-white: rgba(255, 252, 247, 1);
 }
 

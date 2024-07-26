@@ -8,7 +8,7 @@
   flex-direction: row;
   width: 100%;
   justify-content: center;
-  z-index: 1;
+  z-index: 0;
 }
 
 .home-page {
@@ -53,23 +53,37 @@
 
 .home-tab-header {
   position: absolute;
-  left: 23.4%;
+  left: 32%;
   z-index: 1;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition-duration: 1s;
+}
+.home-tab-header:hover {
+  cursor: pointer;
+  border-bottom: 2px solid white;
 }
 
 .recommended-tab-header {
   position: absolute;
-  left: 50%;
+  left: 65%;
   z-index: 1;
-}
+  border-bottom: 2px solid transparent;
+  border-radius: 2px;
 
-.header {
-  border: 1px solid transparent;
   transition-duration: 1s;
 }
-.header:hover {
+.recommended-tab-header:hover {
   cursor: pointer;
-  border: 1px solid white;
+  border-bottom: 2px solid white;
+}
+
+.placeholder-feed {
+  padding: 35% 0%;
+  width: 100%;
+  align-items: center;
+  text-align: center;
+  justify-items: center;
 }
 
 .modal-input {

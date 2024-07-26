@@ -133,8 +133,7 @@ function Post() {
       await setPostAuthorData(loadedAuthorData);
     }
 
-    loadData();
-    setIsLoading(false);
+    loadData().then(() => setIsLoading(false));
   }, [cookies]);
 
   setInterval(() => {
