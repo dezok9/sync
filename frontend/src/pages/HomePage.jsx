@@ -14,6 +14,10 @@ import { UploadWidget } from "./util/html";
 
 import Post from "../components/Post";
 import LoadingPage from "./LoadingPage";
+import CookiesQuestion from "../components/CookiesQuestion";
+
+import HomeFeedTab from "../../assets/HomeFeedTab.svg";
+import RecommendedFeedTab from "../../assets/RecommendedFeedTab.svg";
 
 import "./stylesheets/HomePage.css";
 
@@ -198,89 +202,89 @@ function HomePage() {
           Create Post
         </button>
 
-        {/* Homepage */}
-        <div className="homepage">
-          {/* Home Feed */}
-          <h1
-            className="home-tab-header"
-            onClick={(event) => toggleFeeds(event)}
-          >
-            Home
-          </h1>
-          <div className={"feed " + (feedType ? "hide" : "show")}>
-            <section>{renderHomeFeed()}</section>
+        <div className="all">
+          <div className="main-page">
+            {/* Homepage */}
+            <div className="homepage">
+              {/* Home Feed */}
+              <h1
+                className="home-tab-header"
+                onClick={(event) => toggleFeeds(event)}
+              >
+                Home
+              </h1>
+              <div className={"feed " + (feedType ? "hide" : "show")}>
+                <section>{renderHomeFeed()}</section>
+              </div>
 
-            {/* Post creation modal */}
-            <div className={"modal " + (modalOpen ? "show" : "hide")}>
-              <div>
-                <h2>Title</h2>
-                <input
-                  id={TITLE}
-                  className="modal-input"
-                  placeholder="Title"
-                  value={postContent[TITLE]}
-                  onChange={handleInputChange}
-                ></input>
-                <p
-                  className={
-                    "warning " + (titleInvalidWarning ? "show" : "hide")
-                  }
-                >
-                  Title of post can't be empty.
-                </p>
+              {/* Recommended Feed */}
+              <h1
+                className="recommended-tab-header"
+                onClick={(event) => toggleFeeds(event)}
+              >
+                Recommended
+              </h1>
+              <div className={"feed " + (feedType ? "show" : "hide")}>
+                <section>{renderRecommendedFeed()}</section>
               </div>
-              <div>
-                <input
-                  id={TLDR}
-                  className="modal-input body-input"
-                  placeholder="A short summary (optional)"
-                  value={postContent[TLDR]}
-                  onChange={handleInputChange}
-                ></input>
-
-                <input
-                  id={TEXT}
-                  className="modal-input body-input"
-                  placeholder="Get in sync with others..."
-                  value={postContent[TEXT]}
-                  onChange={handleInputChange}
-                ></input>
-                <p
-                  className={
-                    "warning " + (textInvalidWarning ? "show" : "hide")
-                  }
-                >
-                  Body of post can't be empty.
-                </p>
-                <p
-                  className={
-                    "warning " + (codeTextInvalidWarning ? "show" : "hide")
-                  }
-                >
-                  Code brackets are not closed & cannot be nested!
-                </p>
-              </div>
-              <div>
-                <p>Media</p>
-                <UploadWidget />
-              </div>
-              <button onClick={handlePost}>Post</button>
             </div>
           </div>
-          {/* Recommended Feed */}
 
-          <h1
-            className="recommended-tab-header"
-            onClick={(event) => toggleFeeds(event)}
-          >
-            Recommended
-          </h1>
-          <div className={"feed " + (feedType ? "show" : "hide")}>
-            <section>{renderRecommendedFeed()}</section>
+          {/* Post creation modal */}
+          <div className={"modal " + (modalOpen ? "show" : "hide")}>
+            <div>
+              <h2>Title</h2>
+              <input
+                id={TITLE}
+                className="modal-input"
+                placeholder="Title"
+                value={postContent[TITLE]}
+                onChange={handleInputChange}
+              ></input>
+              <p
+                className={"warning " + (titleInvalidWarning ? "show" : "hide")}
+              >
+                Title of post can't be empty.
+              </p>
+            </div>
+            <div>
+              <input
+                id={TLDR}
+                className="modal-input body-input"
+                placeholder="A short summary (optional)"
+                value={postContent[TLDR]}
+                onChange={handleInputChange}
+              ></input>
+
+              <input
+                id={TEXT}
+                className="modal-input body-input"
+                placeholder="Get in sync with others..."
+                value={postContent[TEXT]}
+                onChange={handleInputChange}
+              ></input>
+              <p
+                className={"warning " + (textInvalidWarning ? "show" : "hide")}
+              >
+                Body of post can't be empty.
+              </p>
+              <p
+                className={
+                  "warning " + (codeTextInvalidWarning ? "show" : "hide")
+                }
+              >
+                Code brackets are not closed & cannot be nested!
+              </p>
+            </div>
+            <div>
+              <p>Media</p>
+              <UploadWidget />
+            </div>
+            <button onClick={handlePost}>Post</button>
           </div>
-          {/* Recommended connections sidebar */}
-          <div className="recommended-connections"></div>
         </div>
+
+        <CookiesQuestion />
       </>
     );
   }

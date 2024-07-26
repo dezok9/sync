@@ -410,7 +410,10 @@ module.exports = async function (app, connectionsGraph) {
 
         for (popularityRecommendation of popularityRecommendations) {
           if (recommendations.length < numberOfRecs) {
-            if (!recommendations.includes(popularityRecommendation)) {
+            if (
+              !recommendations.includes(popularityRecommendation) &&
+              !userConnectionsIDs.includes(popularityRecommendation)
+            ) {
               recommendations = recommendations.concat(
                 popularityRecommendation
               );

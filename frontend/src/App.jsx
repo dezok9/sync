@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { Suspense, lazy, useState } from "react";
-import { USER } from "./pages/util/enums";
+import { USER, ACCEPTED_COOKIES } from "./pages/util/enums";
 import LoadingPage from "./pages/LoadingPage";
 import Page404 from "./pages/Page404";
 
@@ -18,8 +18,6 @@ import "./stylesheets/App.css";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const RecommendedFeedPage = lazy(() => import("./pages/RecommendedFeedPage"));
-const AllChatsPage = lazy(() => import("./pages/AllChatsPage"));
-const ChatPage = lazy(() => import("./pages/ChatPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -35,6 +33,7 @@ const FeaturedProjectCreationPage = lazy(() =>
   import("./pages/FeaturedProjectCreationPage")
 );
 
+import CookiesQuestion from "./components/CookiesQuestion";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
@@ -69,14 +68,9 @@ function App() {
             <Routes>
               <Route element={<PrivateRoutes />}>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/chats" element={<AllChatsPage />} />
                 <Route path="/recommended" element={<RecommendedFeedPage />} />
                 <Route path="/post/:postID" element={<PostPage />} />
                 <Route path="/profile/:userHandle" element={<ProfilePage />} />
-                <Route
-                  path="/chat/:recipientUserHandle"
-                  element={<ChatPage />}
-                />
                 <Route
                   path="/create-featured"
                   element={<FeaturedProjectCreationPage />}
