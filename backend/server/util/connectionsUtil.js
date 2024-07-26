@@ -316,7 +316,7 @@ async function getSyncProfileSimilarityScore(
     where: AND[({ interactingUserID: userOneID }, { targetUserID: userTwoID })],
   });
 
-  const interactionScore = INTERACTION_POINTS * interactions;
+  const interactionScore = INTERACTION_POINTS * interactions.length;
 
   const similarityScore =
     maxSimilarityPoints *
