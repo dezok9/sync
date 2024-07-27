@@ -1,0 +1,17 @@
+.cookies-popup {
+  z-index: 2;
+  position: fixed;
+  bottom: 2%;
+  right: 2%;
+  background-color: black;
+  padding: 4%;
+  border-radius: 5px;
+}
+
+.show {
+  display: block;
+}
+
+.hide {
+  display: none;
+}

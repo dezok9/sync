@@ -6,6 +6,7 @@ const express = require("express");
 const { intersection } = require("./generalUtil");
 
 const GITHUB_SIMILARITY_POINTS = 50;
+const INTERACTION_POINTS = 5;
 const ADJACENT_PROFILE_SIMILARITY_POINTS = 30;
 const RECOMMENDER_PROFILE_SIMILARITY_POINTS = 15;
 const RECENCY_POINTS = 5;
@@ -311,11 +312,17 @@ async function getSyncProfileSimilarityScore(
     userTwoData.connectedUsersIDs
   );
 
+  const interactions = await prisma.interaction.findMany({
+    where: AND[({ interactingUserID: userOneID }, { targetUserID: userTwoID })],
+  });
+
+  const interactionScore = INTERACTION_POINTS * interactions.length;
+
   const similarityScore =
     maxSimilarityPoints *
     ((upvotedPostsSimilarity + connectionsSimilarity) / 2);
 
-  return similarityScore;
+  return similarityScore + interactionScore;
 }
 
 /***

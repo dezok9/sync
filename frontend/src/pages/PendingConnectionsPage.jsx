@@ -27,14 +27,14 @@ function PendingConnections() {
     return <LoadingPage />;
   } else {
     return (
-      <div className="page">
+      <>
         <h1>Pending Connections</h1>
         <div className="connections">
           {pendingConnections.map((pendingConnection) => (
             <Connection connectionInfo={pendingConnection} />
           ))}
         </div>
-      </div>
+      </>
     );
   }
 }

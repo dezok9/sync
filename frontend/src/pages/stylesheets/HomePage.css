@@ -1,3 +1,12 @@
+.all {
+  display: flex;
+  width: 60%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 15%;
+}
+
 .homepage {
   display: flex;
   flex-direction: row;
@@ -6,7 +15,7 @@
 .feed {
   display: flex;
   flex-direction: row;
-  width: 100%;
+  width: 80%;
   justify-content: center;
   z-index: 0;
 }
@@ -22,11 +31,10 @@
 }
 
 .modal {
-  z-index: 1;
   display: flex;
   flex-direction: column;
   margin: 5% 2% 5% 2%;
-  width: 40%;
+  width: 20%;
   padding: 4%;
   height: 40%;
   background-color: rgba(0, 0, 0, 0.4);
@@ -41,14 +49,14 @@
   z-index: 0;
   position: absolute;
   left: 30%;
-  width: 40%;
+  width: 55%;
 }
 
 .recommended-feed-background {
   z-index: -1;
   position: absolute;
   left: 30%;
-  width: 40%;
+  width: 55%;
 }
 
 .post-button {
@@ -71,7 +79,8 @@
 
 .home-tab-header {
   position: absolute;
-  left: 32%;
+  left: 42.1%;
+  top: 14.5%;
   z-index: 1;
   border: 1px solid transparent;
   border-radius: 2px;
@@ -84,8 +93,9 @@
 
 .recommended-tab-header {
   position: absolute;
-  left: 65%;
+  left: 58%;
   z-index: 1;
+  top: 14.5%;
   border-bottom: 2px solid transparent;
   border-radius: 2px;
 
@@ -97,16 +107,21 @@
 }
 
 .placeholder-feed {
-  padding: 35% 0%;
-  width: 100%;
+  padding: 30% 0%;
+  width: 50%;
+  height: 70%;
   align-items: center;
   text-align: center;
   justify-items: center;
 }
 
 .modal-input {
-  padding: 2% 10%;
+  padding: 2% 2%;
   width: 75%;
+  outline: none;
+  border: none;
+  margin-top: 1%;
+  border-radius: 5px;
 }
 
 .active-tab {
