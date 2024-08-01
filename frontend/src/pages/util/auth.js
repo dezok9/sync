@@ -1,4 +1,4 @@
-import { Popup } from "../../components/Popup";
+import Popup from "../../components/Popup";
 
 const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = import.meta.env.VITE_GITHUB_CLIENT_SECRET;
@@ -53,16 +53,16 @@ export async function handleSignUp(loginInfo) {
   ) {
     if (!(email && email.includes("@") && email.includes("."))) {
       // Invalid email address.
-      return false;
+      return { userCreated: false, errorMessage: "Invalid email address" };
     }
 
     if (password !== confirmPassword) {
       // Passwords don't match.
-      return false;
+      return { userCreated: false, errorMessage: "Passwords don't match" };
     }
   } else {
     // Incomplete fields.
-    return false;
+    return { userCreated: false, errorMessage: "Please fill out all fields" };
   }
 
   const areCredentialsUnique = await checkCredentials(
@@ -93,11 +93,18 @@ export async function handleSignUp(loginInfo) {
 
       localStorage.setItem("userID", userData.id);
 
-      return userCreation.ok;
+      return {
+        userCreated: userCreation.ok,
+        errorMessage: userCreation.statusText,
+      };
     } catch (err) {}
   } else {
     // Credentials are not unique.
-    return false;
+    return {
+      userCreated: false,
+      errorMessage:
+        "Credentials (your email, GitHub, or user handle) are not unique!",
+    };
   }
 }
 

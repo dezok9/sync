@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleSignUp, getGithubIdentity } from "./util/auth";
-
+import Popup from "../components/Popup";
 import "./stylesheets/SignUpPage.css";
 
 function SignUpPage() {
@@ -26,6 +26,8 @@ function SignUpPage() {
     [PASSWORD]: "",
     [CONFIRM_PASSWORD]: "",
   });
+
+  const [errorPopup, setErrorPopup] = useState(<></>);
 
   /***
    * Handles changes to input fields.
@@ -57,7 +59,7 @@ function SignUpPage() {
    * Navigates to the login page on successful account creation.
    */
   async function signUp() {
-    const userCreated = await handleSignUp(loginInfo);
+    const { userCreated, errorMessage } = await handleSignUp(loginInfo);
     const state = randomString(20);
 
     localStorage.setItem("CSRFToken", state);
@@ -68,11 +70,14 @@ function SignUpPage() {
         scope: "repo",
         state: state,
       });
+    } else {
+      setErrorPopup(<Popup errorMessage={errorMessage} />);
     }
   }
 
   return (
     <>
+      {errorPopup}
       <section className="auth-pages">
         <div className="input-section">
           <h2>First Name</h2>

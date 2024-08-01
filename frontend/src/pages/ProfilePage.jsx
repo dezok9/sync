@@ -9,11 +9,14 @@ import {
 import { useState, useEffect } from "react";
 import { createInteraction } from "./util/interactions";
 import { useNavigate } from "react-router-dom";
+import { USER } from "./util/enums";
+import { CONNECT_STATUS } from "./util/enums";
+import { ProfilePictureUploadWidget } from "./util/html";
+import { updateProfilePicture } from "./util/user";
+
 import Post from "../components/Post";
 import FeaturedProject from "../components/FeaturedProject";
 import LoadingPage from "./LoadingPage";
-import { USER } from "./util/enums";
-import { CONNECT_STATUS } from "./util/enums";
 
 import "./stylesheets/ProfilePage.css";
 
@@ -26,13 +29,32 @@ const profileUser = profileURL[profileURL.length - 1];
 function ProfilePage() {
   const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [profileUserData, setProfileUserData] = useState({});
+  const [profilePicture, setProfilePicture] = useState(
+    <img className="main-profile-picture" src="" />
+  );
   const [userPosts, setUserPosts] = useState([]);
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [connectionStatus, setConnectionStatus] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const navigate = useNavigate();
+
   const { date, timestamp } = generateDateTimestamp();
   let timer = 0; // Amount of time the user has spent on the profile page in seconds
+
+  /***
+   * Renders the edit option for profile pictures.
+   */
+  function renderEditProfilePicture() {
+    if (cookies.user.id === profileUserData.id) {
+      return (
+        <ProfilePictureUploadWidget
+          userID={profileUserData.id}
+          setProfilePicture={setProfilePicture}
+        />
+      );
+    }
+  }
 
   /***
    * Retrieves the profile picture from the database information.
@@ -42,13 +64,19 @@ function ProfilePage() {
     if (profileUserData.profilePicture !== "") {
       return (
         <>
-          <img src={profileUserData.profilePicture} />
+          {profilePicture}
+          {renderEditProfilePicture()}
         </>
       );
     } else {
       return (
         <>
-          <img src={"https://picsum.photos/200/200"} alt="no-user" />
+          <img
+            className="main-profile-picture"
+            src={"https://picsum.photos/200/200"}
+            alt="no-user"
+          />
+          {renderEditProfilePicture()}
         </>
       );
     }
@@ -99,7 +127,6 @@ function ProfilePage() {
             Connect
           </button>
         );
-        break;
 
       default:
         break;
@@ -120,6 +147,44 @@ function ProfilePage() {
       return (
         <>
           <div>{getConnectButton()}</div>
+        </>
+      );
+    }
+  }
+
+  // Renders the featured projects for a user
+  function renderFeaturedProjects() {
+    if (
+      cookies.user.userHandle === profileUser &&
+      featuredProjects.length > 0
+    ) {
+      return (
+        <>
+          <h2>Featured Projects</h2>
+          <div className="featured-project-placeholder">
+            <div>
+              {featuredProjects.map((featuredProjectInfo) => (
+                <FeaturedProject
+                  key={featuredProjectInfo.id}
+                  featuredProjectInfo={featuredProjectInfo}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      );
+    } else if (cookies.user.userHandle === profileUser) {
+      return (
+        <>
+          <h2>Featured Projects</h2>
+          <div className="featured-project-placeholder">
+            <div
+              className="add-featured"
+              onClick={() => navigate("/create-featured")}
+            >
+              <i class="fa-solid fa-plus"></i>
+            </div>
+          </div>
         </>
       );
     }
@@ -160,6 +225,12 @@ function ProfilePage() {
     async function loadData() {
       const loadedProfileUserData = await getUserData(profileUser);
       await setProfileUserData(loadedProfileUserData);
+      await setProfilePicture(
+        <img
+          className="main-profile-picture"
+          src={loadedProfileUserData.profilePicture}
+        />
+      );
 
       await setFeaturedProjects(loadedProfileUserData.featuredProjects);
 
@@ -208,17 +279,7 @@ function ProfilePage() {
                 <i className="fa-brands fa-linkedin"></i> LinkedIn
               </section>
               {profileInfo()}
-              <div>
-                <h2>Featured Projects</h2>
-                <div>
-                  {featuredProjects.map((featuredProjectInfo) => (
-                    <FeaturedProject
-                      key={featuredProjectInfo.id}
-                      featuredProjectInfo={featuredProjectInfo}
-                    />
-                  ))}
-                </div>
-              </div>
+              {renderFeaturedProjects()}
               <div>
                 <h2>Posts</h2>
                 <div className="posts">

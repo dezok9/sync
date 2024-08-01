@@ -58,9 +58,15 @@ function App() {
     }
   };
 
+  function returnHeader() {
+    if (cookies.user) {
+      return <Header />;
+    }
+  }
+
   return (
     <div className="page">
-      <Header />
+      {returnHeader()}
 
       <CookiesProvider>
         <BrowserRouter>

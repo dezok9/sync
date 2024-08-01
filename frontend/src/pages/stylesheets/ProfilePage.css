@@ -4,19 +4,59 @@
   margin: 5% 8% 5% 0%;
 }
 
+.main-profile-picture {
+  border-radius: 5px;
+  width: 200px;
+  height: 200px;
+}
+
+.edit-profile-picture {
+  position: relative;
+  bottom: 220px;
+  left: 180px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 0.5%;
+  border-radius: 20px;
+}
+.edit-profile-picture:hover {
+  cursor: pointer;
+}
+
 .user-handle {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.5);
 }
 
 a {
   text-decoration: none !important;
 }
 
+.featured-projects {
+  display: flex;
+  flex-direction: row;
+  height: 20%;
+  width: 90%;
+  background-color: rgba(0, 0, 0, 0.3);
+  overflow-x: scroll;
+}
+
+.add-featured {
+  display: flex;
+  justify-items: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 15%;
+  border-radius: 5px;
+}
+.add-featured:hover {
+  cursor: pointer;
+}
+
 .profile-link {
-  color: white;
+  color: var(--near-black);
   font-size: 140%;
   padding: 1% 2% 1% 2%;
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
   margin: 1% 0%;
   min-width: fit-content;
   border-radius: 5px;

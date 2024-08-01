@@ -3,6 +3,8 @@ const REQUESTED = "requested";
 const RESPOND = "respond";
 const NOT_CONNECTED = "not connected";
 
+export const SUCCESS = "success";
+
 export const ACCEPTED_COOKIES = "accepted cookies";
 
 export const USER = "user";

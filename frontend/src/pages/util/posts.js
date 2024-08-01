@@ -32,33 +32,53 @@ export function generateDateTimestamp() {
  * Calculates how long ago a post was made.
  */
 export function deriveTimeSincePost(postDate, postTimestamp) {
-  if (!postDate || postTimestamp) {
-    return;
-  }
-
   const currentDateTime = generateDateTimestamp();
   const splitPostDate = postDate.split(" ");
   const splitCurrentDate = currentDateTime.date.split(" ");
 
   // If post was made today.
   if (currentDateTime.date === postDate) {
-    // If post was made in the last hour.
     const currentHour = currentDateTime.timestamp.split(":")[0];
-    const currentMinute = currentDateTime.timestamp.split(":")[1].slice(0, 3);
+    const currentMinute = currentDateTime.timestamp.split(":")[1].slice(0, 2);
     const currentDayTime = currentDateTime.timestamp.slice(
-      currentDateTime.timestamp.length - 3
+      currentDateTime.timestamp.length - 2
     );
 
     const postHour = postTimestamp.split(":")[0];
-    const postMinute = postTimestamp.split(":")[1].slice(0, 3);
-    const postDayTime = postTimestamp.slice(postTimestamp.length - 3);
+    const postMinute = postTimestamp.split(":")[1].slice(0, 2);
+    const postDayTime = postTimestamp.slice(postTimestamp.length - 2);
 
     if (currentHour === postHour && currentDayTime === postDayTime) {
+      // If post was made in the last hour.
       const minuteDiffernce = Number(currentMinute) - Number(postMinute);
+
       if (minuteDiffernce === 0) {
         return "now";
       } else {
+        if (Number(minuteDiffernce) === 1) {
+          return `${minuteDiffernce} minute ago`;
+        }
+
         return `${minuteDiffernce} minutes ago`;
+      }
+    } else {
+      //If post was made within a few hours.
+      if (postDayTime === currentDayTime) {
+        const hourDifference = Number(currentHour) - Number(postHour);
+
+        if (Number(hourDifference) === 1) {
+          return `${hourDifference} hour ago`;
+        }
+
+        return `${hourDifference} hours ago`;
+      } else {
+        const hourDifference = 12 - Number(postHour) + Number(currentHour);
+
+        if (Number(hourDifference) === 1) {
+          return `${hourDifference} hour ago`;
+        }
+
+        return `${hourDifference} hours ago`;
       }
     }
   }
@@ -71,6 +91,11 @@ export function deriveTimeSincePost(postDate, postTimestamp) {
     const dayDiffernece =
       Number(splitCurrentDate[1].replace(",", "")) -
       Number(splitPostDate[1].replace(",", ""));
+
+    if (Number(dayDiffernece) === 1) {
+      return `${dayDiffernece} day ago`;
+    }
+
     return `${dayDiffernece} days ago`;
   }
   // If year is different.
@@ -81,12 +106,22 @@ export function deriveTimeSincePost(postDate, postTimestamp) {
     const yearDifference =
       Number(splitCurrentDate[splitCurrentDate.length - 1]) -
       Number(splitPostDate[splitPostDate.length - 1]);
+
+    if (Number(monthDiffernce) === 1) {
+      return `${yearDifference} year ago`;
+    }
+
     return `${yearDifference} years ago`;
   }
   // If only month is different.
   else {
     const monthDiffernce =
       MONTHS.indexOf(splitCurrentDate[0]) - MONTHS.indexOf(splitPostDate[0]);
+
+    if (Number(monthDiffernce) === 1) {
+      return `${monthDiffernce} month ago`;
+    }
+
     return `${monthDiffernce} months ago`;
   }
 }
