@@ -4,12 +4,17 @@ import { handleLogin } from "./util/auth";
 import { useCookies } from "react-cookie";
 import { USER } from "./util/enums";
 
+import Popup from "../components/Popup";
+
 import "./stylesheets/LoginPage.css";
 
 function LoginPage() {
   const [cookies, setCookies, removeCookies] = useCookies([USER]);
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true); // Either remembers a user's login information for a week or a day.
+
+  const [errorPopup, setErrorPopup] = useState(<></>);
 
   const navigate = useNavigate();
 
@@ -25,6 +30,13 @@ function LoginPage() {
   }
 
   /***
+   * Handles checking the remember me field.
+   */
+  function handleRememberMe() {
+    setRememberMe(!rememberMe);
+  }
+
+  /***
    * Helper function that attempts to log in.
    * Navigates to the homepage on successful log in.
    */
@@ -36,17 +48,29 @@ function LoginPage() {
         const userData = loginData[1];
 
         if (validLogin) {
-          setCookies(USER, userData, { path: "/", maxAge: 3600 });
+          setCookies(USER, userData, {
+            path: "/",
+            maxAge: rememberMe ? 86400 : 604800,
+          });
           navigate("/");
         }
       } else {
         // Incorrect login information.
+        setErrorPopup(
+          <Popup
+            errorMessage={"Incorrect password or account does not exist."}
+          />
+        );
       }
+    } else {
+      // All fields have not been filled out.
+      setErrorPopup(<Popup errorMessage={"Please fill out all fileds."} />);
     }
   }
 
   return (
     <>
+      {errorPopup}
       <section className="auth-pages">
         <h2>Login</h2>
         <div className="input-section">
@@ -68,6 +92,14 @@ function LoginPage() {
             value={password}
             onChange={handleInputChange}
           ></input>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            value={rememberMe}
+            onChange={() => handleRememberMe()}
+          ></input>
+          Remember me
         </div>
         <p>
           Don't have an account?{" "}

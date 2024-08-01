@@ -174,6 +174,17 @@ function HomePage() {
     }
   }
 
+  /***
+   * Renders the media uploaded to a post.
+   */
+  function renderMedia() {
+    if (postContent[MEDIA] !== undefined) {
+      postContent[MEDIA].map((mediaURL) => {
+        return <img src={postContent[MEDIA]} />;
+      });
+    }
+  }
+
   // Retrieve data upon page reload & cookies change.
   useEffect(() => {
     async function loadData() {
@@ -208,10 +219,12 @@ function HomePage() {
             <div className="homepage">
               {/* Home Feed */}
               <h1
-                className="home-tab-header"
+                className={
+                  "home-tab-header " + (feedType ? "active" : "inactive")
+                }
                 onClick={(event) => toggleFeeds(event)}
               >
-                Home
+                HOME
               </h1>
               <div className={"feed " + (feedType ? "hide" : "show")}>
                 <section>{renderHomeFeed()}</section>
@@ -219,10 +232,12 @@ function HomePage() {
 
               {/* Recommended Feed */}
               <h1
-                className="recommended-tab-header"
+                className={
+                  "recommended-tab-header " + (feedType ? "inactive" : "active")
+                }
                 onClick={(event) => toggleFeeds(event)}
               >
-                Recommended
+                RECOMMENDED
               </h1>
               <div className={"feed " + (feedType ? "show" : "hide")}>
                 <section>{renderRecommendedFeed()}</section>
@@ -278,7 +293,8 @@ function HomePage() {
             </div>
             <div>
               <p>Media</p>
-              <UploadWidget />
+              {renderMedia()}
+              <UploadWidget postContent={postContent} />
             </div>
             <button onClick={handlePost}>Post</button>
           </div>

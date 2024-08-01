@@ -1,0 +1,29 @@
+.popup {
+  display: flex;
+  flex-direction: column;
+  gap: 2%;
+  position: fixed;
+  background-color: rgba(255, 255, 255, 1);
+  color: red;
+  align-items: center;
+  font-size: large;
+  font-weight: 800;
+  border-radius: 10px;
+  z-index: 2;
+
+  justify-content: center;
+  bottom: 3%;
+  right: 3%;
+  width: 15%;
+  height: 10%;
+  padding: 2%;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

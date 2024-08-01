@@ -1,13 +1,20 @@
 import { useState } from "react";
+import { useCookies } from "react-cookie";
+import { ACCEPTED_COOKIES } from "../pages/util/enums";
+
 import "./stylesheets/CookiesQuestion.css";
 
 function CookiesQuestion() {
-  const [acceptedCookies, setAcceptedCookies] = useState(false);
+  const [cookies, setCookies, removeCookies] = useCookies([ACCEPTED_COOKIES]);
+  const [acceptedCookies, setAcceptedCookies] = useState(
+    cookies.ACCEPTED_COOKIES
+  );
 
   /***
    * Accepts the use of cookies.
    */
   function acceptCookies() {
+    setCookies(true);
     setAcceptedCookies(true);
   }
 

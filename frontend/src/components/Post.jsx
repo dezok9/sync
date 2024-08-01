@@ -52,13 +52,15 @@ function Post(postInfo) {
               {postInfo.postInfo.authorData.firstName}{" "}
               {postInfo.postInfo.authorData.lastName}
             </h4>
-            <h5>@{postInfo.postInfo.authorData.userHandle}</h5>
-            <p className="date-time">
-              {deriveTimeSincePost(
-                postInfo.postInfo.date,
-                postInfo.postInfo.timestamp
-              )}
-            </p>
+            <h5>
+              @{postInfo.postInfo.authorData.userHandle}{" "}
+              <p className="date-time">
+                {deriveTimeSincePost(
+                  postInfo.postInfo.date,
+                  postInfo.postInfo.timestamp
+                )}
+              </p>
+            </h5>
           </div>
         </div>
 
@@ -68,18 +70,26 @@ function Post(postInfo) {
           {postInfo.postInfo.text
             .split(CODE_OPENER)
             .map((textSegment) => renderPostText(textSegment))}
+          <div className="post-images">
+            {postInfo.postInfo.mediaURLs.map((mediaURL) => {
+              return <img className="post-image" src={mediaURL} />;
+            })}
+          </div>
         </div>
-        <p>
-          <i
-            className="fa-solid fa-arrow-up upvote"
-            onClick={(event) => {
-              handleUpvote();
-              event.stopPropagation();
-              setUpvotes(upvotes + 1);
-            }}
-          ></i>{" "}
-          Upvotes: {upvotes}
-        </p>
+        <div className="post-stats">
+          <div className="upvote-info">
+            <i
+              className="fa-solid fa-angles-up upvote"
+              onClick={(event) => {
+                handleUpvote();
+                event.stopPropagation();
+                setUpvotes(upvotes + 1);
+              }}
+            ></i>{" "}
+            {upvotes}
+          </div>
+          <div></div>
+        </div>
       </div>
     </>
   );

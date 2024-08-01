@@ -80,11 +80,12 @@
 .home-tab-header {
   position: absolute;
   left: 42.1%;
-  top: 14.5%;
+  top: 11.5%;
   z-index: 1;
   border: 1px solid transparent;
   border-radius: 2px;
   transition-duration: 1s;
+  font-size: 120%;
 }
 .home-tab-header:hover {
   cursor: pointer;
@@ -95,15 +96,24 @@
   position: absolute;
   left: 58%;
   z-index: 1;
-  top: 14.5%;
+  top: 11.5%;
   border-bottom: 2px solid transparent;
   border-radius: 2px;
 
   transition-duration: 1s;
+  font-size: 120%;
 }
 .recommended-tab-header:hover {
   cursor: pointer;
   border-bottom: 2px solid white;
+}
+
+.active {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.inactive {
+  color: var(--near-black);
 }
 
 .placeholder-feed {
